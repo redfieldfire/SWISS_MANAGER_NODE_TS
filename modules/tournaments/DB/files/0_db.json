@@ -1,0 +1,13 @@
+[
+  {
+    "id": 0,
+    "head": {
+      "name": "Open National Tournament"
+    },
+    "players": [],
+    "rounds": [],
+    "winner": "",
+    "winner_id_player": 0,
+    "visible": true
+  }
+]

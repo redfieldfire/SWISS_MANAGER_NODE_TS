@@ -4,7 +4,7 @@ import { T_IndexModel, T_Model, T_Opponent } from '../types';
 
 export class Main implements I_Model {
 
-    model = {} 
+    model = {}
 
     constructor(model: T_Model) {
         this.model = model

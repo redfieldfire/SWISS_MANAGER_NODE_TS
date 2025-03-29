@@ -42,7 +42,7 @@ export const manageWriteJSONError: T_ManageWriteJSONError = async (mr, collectio
 export const manageResponseData: T_manageResponseData = (mr, status, data) => {
     if (!status) return false
     else {
-        mr.data.push(data)
+        mr.data = data
         return true
     }
 }
@@ -197,9 +197,9 @@ export const enableModel: T_DefaultControllerFunction = async (req, mr) => {
     return managePromiseError(async () => {
 
         var collectionModel = GLOBALS[MODULE_DATA_JSON]
-        const exists_model = await checkIfExistsModel(collectionModel, parseInt(req.params.id), mr)
+        const exists_model = await checkIfExistsModel(collectionModel, parseInt(req.params.id), mr, true)
         if(!exists_model) return false
-        collectionModel[parseInt(req.params.id)].visible = false
+        collectionModel[parseInt(req.params.id)].visible = true
         
         if(!HAS_MULTIPLE_FILES){
             const status = await manageWriteJSONError(mr, collectionModel)

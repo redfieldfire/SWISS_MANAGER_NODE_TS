@@ -1,4 +1,4 @@
-import { transformedIndexResource, transformedCollectionIndex } from './../DB/transformers/transformers';
+import { transformedIndexResource, transformedCollectionIndex } from '../DB/transformers/transformers';
 import { GLOBALS, logError, updateGlobal } from '../../../globals';
 import { collection, indexCollection, resource } from '../DB/models/models';
 import { getIndexJSON, getJSON, writeJSON } from '../DB/driver/driver';
