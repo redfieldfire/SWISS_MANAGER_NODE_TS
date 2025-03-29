@@ -1,4 +1,4 @@
-export const MODULE_NAME = 'EMPTY_MODULE'
+export const MODULE_NAME = 'EMPTY-MODULE'
 export const FILE_PATH = `modules/${MODULE_NAME}/DB/files/`
 export const INDEX_SUB_PATH = `index/`
 export const MAIN_DB_PATH_NAME = `db.json`
