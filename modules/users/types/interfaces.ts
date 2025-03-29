@@ -34,5 +34,3 @@ export type T_TournamentInfo = {
 export type T_Buch = () => number
 export type T_PlayedWith = (id: number) => boolean
 export type T_PlayedAndWinWith = (id: number) => boolean
-export type T_PrintInfo = () => T_Info
-export type T_PrintOpponents = () => Array<T_Opponent>

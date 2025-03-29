@@ -3,7 +3,7 @@ import { T_IndexModel, T_Model } from '../types';
 
 export class Main implements I_Model {
 
-    model = {} 
+    model = {} as {[index: string]: any}
 
     constructor(model: T_Model) {
         this.model = model

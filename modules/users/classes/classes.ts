@@ -1,6 +1,8 @@
+import { GLOBALS } from '../../../globals';
+import { MODULE_DATA_JSON } from '../config';
 import { modelStructure } from '../DB/structures';
 import { I_Index, I_Model, I_Player } from '../interfaces';
-import { T_IndexModel, T_Model, T_Opponent } from '../types';
+import { T_ContructorPlayer, T_IndexModel, T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith, T_TournamentInfo } from '../types';
 
 export class Main implements I_Model {
 
@@ -21,7 +23,7 @@ export class Index implements I_Index {
     }
 }
 
-/*export class Player implements I_Player {
+export class Player implements I_Player {
     
     model = {
         id: 0,
@@ -34,37 +36,28 @@ export class Index implements I_Index {
             black_times: 0,
             points: 0,
             opponents: [] as Array<T_Opponent>
-        }
+        } as T_TournamentInfo
     }
 
-    constructor(model: any) {
-        this.model = model
+    constructor({id, user_id, tournament_info}: T_ContructorPlayer) {
+        this.model.id = id
+        this.model.user_id = user_id
+        this.model.user = new Main(GLOBALS[MODULE_DATA_JSON][user_id])
+        if(tournament_info) this.model.tournament_info = tournament_info
     }
 
     buch = () => {
-        return this.tournament_info.opponents.reduce((accum, item) => accum + (item.win ? item.opponent.tournament_info.points : 0), 0)
+        return this.model.tournament_info.opponents.reduce((accum, item) => accum + (item.win ? item.opponent.model.tournament_info.points : 0), 0)
     };
 
     hasPlayedWith: T_PlayedWith = (id) => {
-       return Boolean(this.tournament_info.opponents.filter((item) => item.opponent.user.id == id).length)
+       return Boolean(this.model.tournament_info.opponents.filter((item) => item.opponent.model.user_id == id).length)
     }
 
     hasPlayedAndWinWith: T_PlayedAndWinWith = (id) => {
-        return Boolean(this.tournament_info.opponents.filter((item) => item.win && item.opponent.user.id == id).length)
-    }
-
-    printInfo: T_PrintInfo = () => {
-        return {
-            user: this.user,
-            points: this.tournament_info.points,
-            buch: this.buch()
-        }
-    }
-
-    printOpponents: T_PrintOpponents = () => {
-        return this.tournament_info.opponents
+        return Boolean(this.model.tournament_info.opponents.filter((item) => item.win && item.opponent.model.user_id == id).length)
     }
     
-}*/
+}
 
 export default Main

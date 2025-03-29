@@ -1,13 +1,6 @@
 [
   {
-    "name": "Christopher",
-    "last_name": "Serna Flores EDITED",
-    "age": 23,
-    "elo": 1900,
-    "id": 0
-  },
-  {
-    "id": 1,
+    "id": 0,
     "name": "Christopher",
     "last_name": "Serna Flores",
     "age": 23,
@@ -15,10 +8,25 @@
     "visible": true
   },
   {
+    "name": "Mario",
+    "last_name": "Lopez Betancourt",
+    "age": 22,
+    "elo": 1900,
+    "id": 1
+  },
+  {
     "id": 2,
-    "name": "Christopher",
-    "last_name": "Serna Flores",
-    "age": 23,
+    "name": "Javier Ivan",
+    "last_name": "Garcia Veloz",
+    "age": 22,
+    "elo": 1900,
+    "visible": true
+  },
+  {
+    "id": 3,
+    "name": "Erick",
+    "last_name": "Vega Parra",
+    "age": 30,
     "elo": 1900,
     "visible": true
   }

@@ -1,6 +1,6 @@
 import { transformedIndexResource, transformedCollectionIndex } from '../DB/transformers/transformers';
 import { GLOBALS, logError, updateGlobal } from '../../../globals';
-import { collection, indexCollection, resource } from '../DB/models/models';
+import { collection, indexCollection } from '../DB/models/models';
 import { getIndexJSON, getJSON, writeJSON } from '../DB/driver/driver';
 import { transformedCollection, transformedResource } from '../DB/transformers/transformers';
 import { T_CheckIfExistModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_SearchId, T_UpdateDataWithoutTrashed } from '../types/functions';
@@ -65,10 +65,7 @@ export const checkIfExistsModel: T_CheckIfExistModel = async (cM, id, mr, with_a
     return new Promise(async (resolve, reject) => {
         try {
             let data = [] as Array<any>
-            let rows = []
-            if (HAS_MULTIPLE_FILES) rows = GLOBALS[MODULE_DATA_JSON]
-            else rows = cM
-            data = searchId(rows, mr, id, with_all)
+            data = searchId(cM, mr, id, with_all)
             if(!Array.isArray(data)) resolve(false)
             resolve(data[0])
         }

@@ -65,10 +65,7 @@ export const checkIfExistsModel: T_CheckIfExistModel = async (cM, id, mr, with_a
     return new Promise(async (resolve, reject) => {
         try {
             let data = [] as Array<any>
-            let rows = []
-            if (HAS_MULTIPLE_FILES) rows = GLOBALS[MODULE_DATA_JSON]
-            else rows = cM
-            data = searchId(rows, mr, id, with_all)
+            data = searchId(cM, mr, id, with_all)
             if(!Array.isArray(data)) resolve(false)
             resolve(data[0])
         }
