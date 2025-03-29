@@ -28,7 +28,7 @@ router.delete('/disable/:id', async (req: Request, res: Response) => {
     res.json(await disable(req, res))
 })
 
-router.put('/add-player/:id', async (req: Request, res: Response) => {
+router.put('/:id/add-player/', async (req: Request, res: Response) => {
     res.json(await addPlayer(req, res))
 })
 
