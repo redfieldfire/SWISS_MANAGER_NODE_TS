@@ -1,0 +1,12 @@
+DATE: 2025/3/29 ---------------------------------------------------------------------
+
+SEPARATE "DRIVER, ROUTES AND HELPERS" FROM THE EMPTY-MODULE
+CREATE "DRIVER CLASS IN A NEW FOLDER, FUNCTION: 'CREATEBASICROUTES', HELPER CLASS"
+
+FROM MODULE TOURNAMENTS
+    1-CREATE WITH PLAYERS
+    2-ADD PLAYER
+    3-(IN PROGRESS (CREATING NEW MODULE FOR PLAYERS) ) REMOVE-PLAYER
+
+DATE: ------------------------------------------------------------------------------
+

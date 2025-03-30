@@ -9,6 +9,7 @@ import { HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_INDEX_PATH_NAME, MODULE_DATA_J
 import { T_IndexModel, T_Model } from '../types';
 import { indexModelStructure } from '../DB/structures';
 import { Player } from '../../users/classes';
+import { T_ModelPlayer } from '../../users/types';
 
 export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => {
     return new Promise(async (resolve, reject) => {
@@ -138,7 +139,7 @@ export const addModel: T_DefaultControllerFunctionWithRow = async (req, mr, row)
             row.id = new_index.id
             row.visible = true
 
-            //------------------------------------------------------- CREATE NEW FILE JSON
+            //------------------------------------------------------- CREATE FROM USERS IDS THE NEW PLAYERS
 
             if (row.players.length) {
                 const uniques = row.players.filter((user_id: number) => row.players.indexOf(user_id) === row.players.lastIndexOf(user_id))
@@ -152,8 +153,18 @@ export const addModel: T_DefaultControllerFunctionWithRow = async (req, mr, row)
                         return false
                     }
                 }
-                row.players = row.players.map((item: number, index: number) => new Player({id: index, user_id: item}))
+                //---------------------------------------------------------------------- PREPARE THE DATA FOR DB (REMOVE THE MODEL)
+                row.players = row.players.map((item: number, index: number) => {
+                    const new_player = new Player({id: index, user_id: item})
+                    const transformed_player_to_db_row: {[index:string]: any} = {
+                        ...new_player.model
+                    }
+                    transformed_player_to_db_row.user = new_player.model.user.model
+                    return transformed_player_to_db_row
+                })
             }
+
+            //------------------------------------------------------- CREATE NEW FILE JSON
 
             const status_file = await manageWriteJSONError(mr, collection([row]), new_index.file_name)
             if (!status_file) {
@@ -162,6 +173,7 @@ export const addModel: T_DefaultControllerFunctionWithRow = async (req, mr, row)
             }
 
             //-------------------------------------------------------  CREATE ROW IN INDEX
+
             const status_index = await manageWriteJSONError(mr, indexCollection(collectionIndexModel), `${INDEX_SUB_PATH}${MAIN_INDEX_PATH_NAME}`)
             if (!status_index) {
                 mr.message_error = `Error creating the index JSON for ${MODULE_NAME}`
@@ -230,32 +242,71 @@ export const enableModel: T_DefaultControllerFunction = async (req, mr) => {
 export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
     return managePromiseError(async () => {
 
+        //------------------------------------------------------- CHECK IF EXISTS USER WITH ID
         const user_id = parseInt(row.user_id)
+
         const exists_user = await checkIfExistsModel(GLOBALS[users_MODULE_DATA_JSON], user_id, mr, true)
         if(!exists_user) {
             mr.message_error = `The user with the id ${user_id} doesn't exists`
             return false
         }
 
+        //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
         const model_index_id = parseInt(req.params.id)
         const exists_model = await checkIfExistsModel(GLOBALS[MODULE_DATA_JSON], model_index_id, mr)
         if(!exists_model) return false
 
         const { file_name } = GLOBALS[MODULE_DATA_JSON][model_index_id]
-        const tournament_array = transformedCollection(await getJSON(file_name))
+        const tournament_array = collection(await getJSON(file_name))
 
         const tournament = tournament_array[0]
-        const players = tournament.model.players
+        const players = tournament.players
 
-        if(players.filter((player: {[index: string]: any}) => player.model.user_id == user_id).length) {
+        if(players.filter((player: T_ModelPlayer) => player.user_id == user_id).length) {
             mr.message_error = `The user with the id ${user_id} is duplicated`
             return false
         }
+        //---------------------------------------------------------------------- PREPARE THE DATA FOR DB (REMOVE THE MODEL)
+        const new_player = new Player({id:  players.length, user_id: user_id})
+        const transformed_player_to_db_row: {[index:string]: any} = {
+            ...new_player.model
+        }
+        transformed_player_to_db_row.user = new_player.model.user.model
+        tournament.players.push(transformed_player_to_db_row)
 
-        tournament.model.players.push(new Player({id: players.length, user_id: user_id}))
-
-        const status = await manageWriteJSONError(mr, collection([tournament.model]), file_name)
-        return manageResponseData(mr, status, transformedCollection([tournament.model]))
+        const status = await manageWriteJSONError(mr, collection([tournament]), file_name)
+        return manageResponseData(mr, status, transformedCollection([tournament]))
 
     }, mr, "ADD PLAYER TO MODEL")
+}
+export const removePlayerToModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
+    return managePromiseError(async () => {
+
+        //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
+        const model_index_id = parseInt(req.params.id)
+        const exists_model = await checkIfExistsModel(GLOBALS[MODULE_DATA_JSON], model_index_id, mr)
+        if(!exists_model) return false
+
+        //------------------------------------------------------- GET THE TOURNAMENT FILE
+        const { file_name } = GLOBALS[MODULE_DATA_JSON][model_index_id]
+        const tournament_array = collection(await getJSON(file_name))
+
+        const tournament = tournament_array[0]
+        const players = tournament.players
+
+        //------------------------------------------------------- CHECK IF EXISTS PLAYER WITH ID
+        const player_id = parseInt(row.player_id)
+
+        if(players.filter((player: T_ModelPlayer) => player.id == player_id).length) {
+            tournament.players.filter((player: T_ModelPlayer) => player.id == player_id)[0].visible = false
+        }
+        else {
+            mr.message_error = `The player with the id ${player_id} don't exists`
+            return false
+        }
+
+        const status = await manageWriteJSONError(mr, collection([tournament]), file_name)
+        return manageResponseData(mr, status, transformedCollection([tournament]))
+
+    }, mr, "REMOVE PLAYER TO MODEL")
 }

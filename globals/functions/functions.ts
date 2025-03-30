@@ -1,6 +1,6 @@
-import { Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { ManageResponse } from "../classes"
-import { T_InitFiles, T_InitGLOBALS, T_InitROUTES, T_LogError, T_ValidateRequest } from "../types"
+import { T_CreateBasicRoutes, T_InitFiles, T_InitGLOBALS, T_InitROUTES, T_LogError, T_ValidateRequest } from "../types"
 
 import { readdir } from "fs/promises";
 import { join } from "path";
@@ -73,4 +73,32 @@ export const initROUTES: T_InitROUTES = async (fun) => {
         await fun(module_path, module)
         console.log(`ROUTES ${module} started!`)
     }, "routes", "routes.ts")
+}
+
+//------------------------------------------------------ CREATE BASIC ROUTES
+
+export const createBasicRoutes: T_CreateBasicRoutes = (router, add, get, getAll, update, disable, enable) => {
+    router.get('/paginated/:page', async (req: Request, res: Response) => {
+        res.json(await getAll(req, res));
+    });
+    
+    router.get('/:id', async (req: Request, res: Response) => {
+        res.json(await get(req, res));
+    });
+    
+    router.post('/', async (req: Request, res: Response) => {
+        res.json(await add(req, res))
+    })
+    
+    router.put('/:id', async (req: Request, res: Response) => {
+        res.json(await update(req, res))
+    })
+    
+    router.put('/enable/:id', async (req: Request, res: Response) => {
+        res.json(await enable(req, res))
+    })
+    
+    router.delete('/disable/:id', async (req: Request, res: Response) => {
+        res.json(await disable(req, res))
+    })
 }

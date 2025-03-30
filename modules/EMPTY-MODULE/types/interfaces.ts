@@ -1,1 +1,1 @@
-export type example = {}
+export type T_Basic = () => Promise<boolean>

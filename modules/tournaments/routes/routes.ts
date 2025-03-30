@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import { add, addPlayer, disable, enable, get, getAll, update } from '../controllers';
+import { add, addPlayer, disable, enable, get, getAll, removePlayer, update } from '../controllers';
 
 const router = Router();
 
@@ -30,6 +30,10 @@ router.delete('/disable/:id', async (req: Request, res: Response) => {
 
 router.put('/:id/add-player/', async (req: Request, res: Response) => {
     res.json(await addPlayer(req, res))
+})
+
+router.put('/:id/remove-player/', async (req: Request, res: Response) => {
+    res.json(await removePlayer(req, res))
 })
 
 export default router;

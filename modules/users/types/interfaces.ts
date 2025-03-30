@@ -2,6 +2,13 @@ import { Main, Player } from "../classes"
 
 //---------------------------------------- INTERFACES
 
+export type T_ModelPlayer = {
+    id: number
+    user_id: number
+    user: Main
+    tournament_info?: T_TournamentInfo
+}
+
 export type T_ContructorPlayer = {
     id: number,
     user_id: number,

@@ -1,4 +1,4 @@
-import { indexModelStructure, modelStructure } from "../DB/structures"
+import { indexModelStructure, modelPlayerStructure, modelStructure } from "../DB/structures"
 
 //---------------------------------------- MODELS
 
