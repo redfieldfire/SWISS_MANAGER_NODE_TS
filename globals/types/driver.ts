@@ -1,4 +1,6 @@
-export type T_getJSON = (file_name?: string) => Promise<Array<object>>
+import { T_Collection } from "./models"
+
+export type T_GetJSON = (file_name?: string) => Promise<Array<object>>
 export type T_WriteJSON = (rows: Array<object>, file_name?: string) => Promise<boolean>
 export type T_GetIndexes = () => Promise<Array<string>>
 
@@ -11,5 +13,3 @@ export type T_DriverConstructor = {
     collection: T_Collection, 
     indexCollection: T_Collection
 }
-
-export type T_Collection = (rows: any) => Array<object>

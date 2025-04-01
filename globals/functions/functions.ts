@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { ManageResponse } from "../classes"
 import { T_CreateBasicRoutes, T_InitFiles, T_InitGLOBALS, T_InitROUTES, T_LogError, T_ValidateRequest } from "../types"
 
@@ -62,7 +62,7 @@ export const initGLOBALS: T_InitGLOBALS = async () => {
     initFiles(async (module_path, module) => {
         const { updateDataWithoutTrashed } = await import(module_path);
         if (typeof updateDataWithoutTrashed === "function") {
-            updateDataWithoutTrashed(true);
+            await updateDataWithoutTrashed();
             console.log(`GLOBALS ${module} started!`)
         }
     }, "functions", "functions.ts")

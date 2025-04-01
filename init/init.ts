@@ -1,4 +1,4 @@
-import { initGLOBALS, initROUTES, logError, T_Constructor } from "../globals";
+import { GLOBALS, initGLOBALS, initROUTES, logError, T_Constructor } from "../globals";
 
 export const init: T_Constructor = async (routes_fun) => {
     try {

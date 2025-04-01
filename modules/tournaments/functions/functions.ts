@@ -1,251 +1,64 @@
-import { MODULE_DATA_JSON as users_MODULE_DATA_JSON } from './../../users/config/config';
-import { transformedIndexResource, transformedCollectionIndex } from './../DB/transformers/transformers';
-import { GLOBALS, logError, updateGlobal } from '../../../globals';
-import { collection, indexCollection } from '../DB/models/models';
-import { getIndexJSON, getJSON, writeJSON } from '../DB/driver/driver';
-import { transformedCollection, transformedResource } from '../DB/transformers/transformers';
-import { T_CheckIfExistModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_SearchId, T_UpdateDataWithoutTrashed } from '../types/functions';
-import { HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
-import { T_IndexModel, T_Model } from '../types';
-import { indexModelStructure } from '../DB/structures';
-import { Player } from '../../users/classes';
-import { T_ModelPlayer } from '../../users/types';
+import { T_DefaultControllerFunctionWithRow, T_UpdateDataWithoutTrashed } from '../types/functions';
 
-export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            if(!HAS_MULTIPLE_FILES) updateGlobal(MODULE_DATA_JSON, collection(await getJSON()))
-            else updateGlobal(MODULE_DATA_JSON, indexCollection(await getIndexJSON()))
-            resolve(true)
-        }
-        catch(error: any) {
-            logError(`Error loading GLOBAL DATA in module ${MODULE_NAME}: ${error}`)
-            console.error(`Error loading GLOBAL DATA in module ${MODULE_NAME}: ${error}`)
-            resolve(false)
-        }
-    })
-}
+import { BasicControllerFunctions, GLOBALS, ManageResponse } from '../../../globals';
+import { Main } from '../model';
+import { T_Model } from '../types';
+import { T_Model as T_ModelPlayer } from '../../players/types';
 
-export const manageWriteJSONError: T_ManageWriteJSONError = async (mr, collectionModel, file_name?) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            mr.successful = await writeJSON(collectionModel, file_name)
-            await updateDataWithoutTrashed()
-            resolve(true)
-        }
-        catch (error: any) {
-            mr.message_error = `Error al escribir el JSON de ${MODULE_NAME}`
-            await logError(`----${MODULE_NAME}---- ERROR WRITTING JSON DATA: ${String(error.message)}`)
-            console.log(`----${MODULE_NAME}---- ERROR WRITTING JSON DATA: ${String(error.message)}`)
-            resolve(false)
-        }
-    })
-}
+import { Main as Player } from '../../players/model';
+import { Main as User } from '../../users/model';
+import { MODULE_DATA_JSON } from '../config';
 
-export const manageResponseData: T_manageResponseData = (mr, status, data) => {
-    if (!status) return false
-    else {
-        mr.data = data
-        return true
-    }
-}
-
-export const managePromiseError: T_ManagePromiseError = async (fun, mr, type) => {
-    return await new Promise(async (resolve, reject) => {
-        try {
-            resolve(await fun())
-        }
-        catch(error: any){
-            mr.message_error = `Error ${type} ${MODULE_NAME}`
-            await logError(`----${MODULE_NAME}---- ERROR ${type}: ${error}`)
-            console.error(`----${MODULE_NAME}---- ERROR ${type}: ${error}`)
-            resolve(false)
-        }
-    })
-}
-
-export const checkIfExistsModel: T_CheckIfExistModel = async (cM, id, mr, with_all = null) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let data = [] as Array<any>
-            data = searchId(cM, mr, id, with_all)
-            if(!Array.isArray(data)) resolve(false)
-            resolve(data[0])
-        }
-        catch(error: any) { 
-            logError(`Error checking if exist in module ${MODULE_NAME}: ${error}`)
-            console.error(`Error checking if exist in module ${MODULE_NAME}: ${error}`)
-            mr.message_error = `Error searching ${MODULE_NAME} at row ${id}`
-            resolve(false)
-        }
-    })
-}
-
-export const searchId: T_SearchId = (data, mr, id, with_all = null) => {
-    const temp_outcome = data.filter((model) => model.id == id)
-    if(temp_outcome.length) {
-        if (with_all ? false : !temp_outcome[0].visible) {
-            mr.message_error = `The module ${MODULE_NAME} has row ${id} but disabled`
-            return false;
-        }
-        return temp_outcome
-    }
-    else mr.message_error = `The module ${MODULE_NAME} hasn't row ${id}`
-    return false
-}
-//-------------------------------------------------------------------------------
-
-export const getModel: T_DefaultControllerFunction = async(req, mr) => {
-    return managePromiseError(async () => {
-        const exists_model = await checkIfExistsModel(GLOBALS[MODULE_DATA_JSON], parseInt(req.params.id), mr)
-        if(!exists_model) return false
-
-        if(!HAS_MULTIPLE_FILES) mr.data = transformedCollection([exists_model])
-        else {
-            const { file_name } = exists_model as T_IndexModel
-            const model = transformedCollection(await getJSON(file_name))
-            mr.data = model
-        }
-        return true
-    }, mr, "GET MODEL")
-}
-export const getCollection: T_DefaultControllerFunction = async (req, mr) => {
-    return managePromiseError(async () => {
-        const page = parseInt(req.params.page)
-        mr.data = transformedCollection(GLOBALS[MODULE_DATA_JSON].filter((model) => model.visible).slice((page-1) * 20, page * 20))
-        return true
-    }, mr, "GET COLLECTION")
-}
-export const addModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return managePromiseError(async () => {
-        if(!HAS_MULTIPLE_FILES) {
-            var collectionModel = GLOBALS[MODULE_DATA_JSON]
-            row.id = collectionModel.length
-            row.visible = true
-            collectionModel.push(row)
-            const status = await manageWriteJSONError(mr, collectionModel)
-            return manageResponseData(mr, status, transformedCollection([row]))
-        }
-        else {
-            //-------------------------------------------------------- CREATE INDEX FIRST
-            var collectionIndexModel = GLOBALS[MODULE_DATA_JSON]
-            const new_index = indexModelStructure
-            new_index.id = collectionIndexModel.length
-            new_index.file_name = `${new_index.id}_db.json`
-            collectionIndexModel.push(new_index)
-
-            //------------------------------------------------------- CREATE NEW MODEL
-
-            row.id = new_index.id
-            row.visible = true
-
-            //------------------------------------------------------- CREATE FROM USERS IDS THE NEW PLAYERS
-
+export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => Main.BM.helpers.updateDataWithoutTrashed()
+const basic_controller_functions = new BasicControllerFunctions(
+    {
+        BM: Main.BM,
+        addModelExtraFunction: async (row: T_Model, mr: ManageResponse) => {
             if (row.players.length) {
+
                 const uniques = row.players.filter((user_id: number) => row.players.indexOf(user_id) === row.players.lastIndexOf(user_id))
                 if (uniques.length != row.players.length) {
                     mr.message_error = `The players contains repeated ids`
                     return false
                 }
+
                 for (const user_id of row.players) {
-                    if (!(await checkIfExistsModel(GLOBALS[users_MODULE_DATA_JSON], user_id, mr))) {
+                    if (!((await User.BM.find(user_id)).successful)) {
                         mr.message_error = `The user with the id ${user_id} doesn't exists`
                         return false
                     }
                 }
+
                 //---------------------------------------------------------------------- PREPARE THE DATA FOR DB (REMOVE THE MODEL)
                 row.players = row.players.map((item: number, index: number) => {
-                    const new_player = new Player({id: index, user_id: item})
-                    const transformed_player_to_db_row: {[index:string]: any} = {
-                        ...new_player.model
-                    }
-                    transformed_player_to_db_row.user = new_player.model.user.model
-                    return transformed_player_to_db_row
+                    const new_player_resource = new Player({id: index, user_id: item}).model
+                    new_player_resource.user = User.BM.resource(new_player_resource.user.model)
+                    return new_player_resource
                 })
+
+                return true
             }
-
-            //------------------------------------------------------- CREATE NEW FILE JSON
-
-            const status_file = await manageWriteJSONError(mr, collection([row]), new_index.file_name)
-            if (!status_file) {
-                mr.message_error = `Error creating the data JSON for ${MODULE_NAME}`
-                return false
-            }
-
-            //-------------------------------------------------------  CREATE ROW IN INDEX
-
-            const status_index = await manageWriteJSONError(mr, indexCollection(collectionIndexModel), `${INDEX_SUB_PATH}${MAIN_INDEX_PATH_NAME}`)
-            if (!status_index) {
-                mr.message_error = `Error creating the index JSON for ${MODULE_NAME}`
-                return false
-            }
-            return manageResponseData(mr, status_file && status_index, [transformedIndexResource(new_index), transformedResource(row)]) 
         }
-    }, mr, "ADD MODEL")
-}
-export const updateModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return managePromiseError(async () => {
-        var collectionModel = GLOBALS[MODULE_DATA_JSON]
-        row.id = parseInt(req.params.id)
-        const exists_model = await checkIfExistsModel(collectionModel, row.id, mr)
-        if(!exists_model) return false
-        var status = false
-        if(!HAS_MULTIPLE_FILES) {
-            collectionModel[row.id] = row
-            status = await manageWriteJSONError(mr, collectionModel)
-        }
-        else {
-            const { file_name } = exists_model as T_IndexModel
-            status = await manageWriteJSONError(mr, collection([row]), file_name)
-        }
-        return manageResponseData(mr, status, transformedCollection([row]))
-    }, mr, "UPDATE MODEL")
-}
-export const disableModel: T_DefaultControllerFunction = async (req, mr) => {
-    return managePromiseError(async () => {
+    }
+)
 
-        var collectionModel = GLOBALS[MODULE_DATA_JSON]
-        const exists_model = await checkIfExistsModel(collectionModel, parseInt(req.params.id), mr)
-        if(!exists_model) return false
-        collectionModel[parseInt(req.params.id)].visible = false
-        
-        if(!HAS_MULTIPLE_FILES){
-            const status = await manageWriteJSONError(mr, collectionModel)
-            return manageResponseData(mr, status, transformedCollection([collectionModel[parseInt(req.params.id)]]))
-        }
-        else {
-            const status = await manageWriteJSONError(mr, collectionModel,`${INDEX_SUB_PATH}${MAIN_INDEX_PATH_NAME}`)
-            return manageResponseData(mr, status, transformedCollectionIndex([collectionModel[parseInt(req.params.id)]]))
-        }
+export const getModel = basic_controller_functions.getModel
+export const getCollection = basic_controller_functions.getCollection
+export const addModel = basic_controller_functions.addModel
+export const updateModel = basic_controller_functions.updateModel
+export const enableModel = basic_controller_functions.enableModel
+export const disableModel = basic_controller_functions.disableModel
 
-    }, mr, "DISABLE MODEL")
-}
-export const enableModel: T_DefaultControllerFunction = async (req, mr) => {
-    return managePromiseError(async () => {
 
-        var collectionModel = GLOBALS[MODULE_DATA_JSON]
-        const exists_model = await checkIfExistsModel(collectionModel, parseInt(req.params.id), mr, true)
-        if(!exists_model) return false
-        collectionModel[parseInt(req.params.id)].visible = true
-        
-        if(!HAS_MULTIPLE_FILES){
-            const status = await manageWriteJSONError(mr, collectionModel)
-            return manageResponseData(mr, status, transformedCollection([collectionModel[parseInt(req.params.id)]]))
-        }
-        else {
-            const status = await manageWriteJSONError(mr, collectionModel, `${INDEX_SUB_PATH}${MAIN_INDEX_PATH_NAME}`)
-            return manageResponseData(mr, status, transformedCollectionIndex([collectionModel[parseInt(req.params.id)]]))
-        }
+//------------------------------------------------------------
 
-    }, mr, "ENABLE MODEL")
-}
 export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return managePromiseError(async () => {
+    return Main.BM.helpers.managePromiseError(async () => {
 
         //------------------------------------------------------- CHECK IF EXISTS USER WITH ID
         const user_id = parseInt(row.user_id)
 
-        const exists_user = await checkIfExistsModel(GLOBALS[users_MODULE_DATA_JSON], user_id, mr, true)
+        const exists_user = (await User.BM.find(user_id, true)).successful
         if(!exists_user) {
             mr.message_error = `The user with the id ${user_id} doesn't exists`
             return false
@@ -253,11 +66,11 @@ export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, 
 
         //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
         const model_index_id = parseInt(req.params.id)
-        const exists_model = await checkIfExistsModel(GLOBALS[MODULE_DATA_JSON], model_index_id, mr)
+        const exists_model = (await Main.BM.find(model_index_id)).successful
         if(!exists_model) return false
 
         const { file_name } = GLOBALS[MODULE_DATA_JSON][model_index_id]
-        const tournament_array = collection(await getJSON(file_name))
+        const tournament_array = Main.BM.collection(await Main.BM.driver.getJSON(file_name))
 
         const tournament = tournament_array[0]
         const players = tournament.players
@@ -274,39 +87,8 @@ export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, 
         transformed_player_to_db_row.user = new_player.model.user.model
         tournament.players.push(transformed_player_to_db_row)
 
-        const status = await manageWriteJSONError(mr, collection([tournament]), file_name)
-        return manageResponseData(mr, status, transformedCollection([tournament]))
+        const status = await Main.BM.helpers.manageWriteJSONError(mr, Main.BM.collection([tournament]), file_name)
+        return Main.BM.helpers.manageResponseData(mr, status, Main.BM.transformCollection([tournament]))
 
     }, mr, "ADD PLAYER TO MODEL")
-}
-export const removePlayerToModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return managePromiseError(async () => {
-
-        //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
-        const model_index_id = parseInt(req.params.id)
-        const exists_model = await checkIfExistsModel(GLOBALS[MODULE_DATA_JSON], model_index_id, mr)
-        if(!exists_model) return false
-
-        //------------------------------------------------------- GET THE TOURNAMENT FILE
-        const { file_name } = GLOBALS[MODULE_DATA_JSON][model_index_id]
-        const tournament_array = collection(await getJSON(file_name))
-
-        const tournament = tournament_array[0]
-        const players = tournament.players
-
-        //------------------------------------------------------- CHECK IF EXISTS PLAYER WITH ID
-        const player_id = parseInt(row.player_id)
-
-        if(players.filter((player: T_ModelPlayer) => player.id == player_id).length) {
-            tournament.players.filter((player: T_ModelPlayer) => player.id == player_id)[0].visible = false
-        }
-        else {
-            mr.message_error = `The player with the id ${player_id} don't exists`
-            return false
-        }
-
-        const status = await manageWriteJSONError(mr, collection([tournament]), file_name)
-        return manageResponseData(mr, status, transformedCollection([tournament]))
-
-    }, mr, "REMOVE PLAYER TO MODEL")
 }

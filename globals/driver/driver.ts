@@ -1,16 +1,16 @@
 import { logError } from "../functions";
 import { I_Driver } from "../interfaces";
-import { T_DriverConstructor, T_getJSON, T_WriteJSON } from "../types";
+import { T_DriverConstructor, T_GetJSON, T_WriteJSON } from "../types";
 
 const fs = require('fs');
 
 export class Driver implements I_Driver {
 
-    module_name = ""
-    file_path = ""
-    main_db_path_name = ""
-    index_sub_path = ""
-    main_index_path_name = ""
+    module_name
+    file_path
+    main_db_path_name
+    index_sub_path
+    main_index_path_name
     collection
     indexCollection
 
@@ -24,7 +24,7 @@ export class Driver implements I_Driver {
         this.indexCollection = indexCollection
     }
 
-    getJSON: T_getJSON = async (file_name) => {
+    getJSON: T_GetJSON = async (file_name) => {
         return new Promise(async (resolve, reject) => {
             const path = `${this.file_path}${file_name ? file_name : this.main_db_path_name}`
             try {
@@ -53,7 +53,7 @@ export class Driver implements I_Driver {
         });
     }
     
-    getIndexJSON: T_getJSON = async () => {
+    getIndexJSON: T_GetJSON = async () => {
         return new Promise(async (resolve, reject) => {
             const path = `${this.file_path}${this.index_sub_path}${this.main_index_path_name}`
             try {

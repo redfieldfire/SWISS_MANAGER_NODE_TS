@@ -1,76 +1,12 @@
-import { ManageResponse } from "../../../globals/classes";
-import { addModel, addPlayerToModel, disableModel, enableModel, getCollection, getModel, removePlayerToModel, updateModel } from "../functions";
-import { addPlayerRequest, modelRequest, removePlayerRequest } from "../requests";
-import { T_GenericAsyncController } from "../types";
+import { BasicControllers } from "../../../globals/classes";
+import { addModel, disableModel, enableModel, getCollection, getModel, updateModel } from "../functions";
+import { modelRequest } from "../requests";
 
-export const getAll: T_GenericAsyncController = async (req, res) => {
-    const mr = new ManageResponse()
-    mr.successful = await getCollection(req, mr)
-    return mr.getResponse()
-}
+const basic_controllers = new BasicControllers({ modelRequest, getModel, getCollection, addModel, updateModel, disableModel, enableModel})
 
-export const get: T_GenericAsyncController = async (req, res) => {
-    const mr = new ManageResponse()
-    mr.successful = await getModel(req, mr)
-    return mr.getResponse()
-}
-
-export const add: T_GenericAsyncController = async (req, res) => {
-
-    //-------------------------------------------------REQUEST VALIDATOR
-    const row = modelRequest(req.body, res)
-    if (!row.successful) return row.getResponse()
-    //-------------------------------------------------IF INVALID RETURN ERROR
-
-    const mr = new ManageResponse()
-    await addModel(req, mr, row.data[0])
-    return mr.getResponse()
-}
-
-export const update: T_GenericAsyncController = async (req, res) => {
-    
-    //-------------------------------------------------REQUEST VALIDATOR
-    const row = modelRequest(req.body, res)
-    if (!row.successful) return row.getResponse()
-    //-------------------------------------------------IF INVALID RETURN ERROR
-
-    const mr = new ManageResponse()
-    await updateModel(req, mr, row.data[0])
-    return mr.getResponse()
-}
-
-export const enable: T_GenericAsyncController = async (req, res) => {
-    const mr = new ManageResponse()
-    await enableModel(req, mr)
-    return mr.getResponse()
-}
-
-export const disable: T_GenericAsyncController = async (req, res) => {
-    const mr = new ManageResponse()
-    await disableModel(req, mr)
-    return mr.getResponse()
-}
-
-export const addPlayer: T_GenericAsyncController = async (req, res) => {
-    
-    //-------------------------------------------------REQUEST VALIDATOR
-    const row = addPlayerRequest(req.body, res)
-    if (!row.successful) return row.getResponse()
-    //-------------------------------------------------IF INVALID RETURN ERROR
-
-    const mr = new ManageResponse()
-    await addPlayerToModel(req, mr, row.data[0])
-    return mr.getResponse()
-}
-
-export const removePlayer: T_GenericAsyncController = async (req, res) => {
-    
-    //-------------------------------------------------REQUEST VALIDATOR
-    const row = removePlayerRequest(req.body, res)
-    if (!row.successful) return row.getResponse()
-    //-------------------------------------------------IF INVALID RETURN ERROR
-
-    const mr = new ManageResponse()
-    await removePlayerToModel(req, mr, row.data[0])
-    return mr.getResponse()
-}
+export const get = basic_controllers.get
+export const getAll = basic_controllers.getAll
+export const add = basic_controllers.add
+export const update = basic_controllers.update
+export const disable = basic_controllers.disable
+export const enable = basic_controllers.enable

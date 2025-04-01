@@ -8,5 +8,8 @@ FROM MODULE TOURNAMENTS
     2-ADD PLAYER
     3-(IN PROGRESS (CREATING NEW MODULE FOR PLAYERS) ) REMOVE-PLAYER
 
-DATE: ------------------------------------------------------------------------------
+DATE: 2025/3/31 ---------------------------------------------------------------------
+
+SEPARATE ALL THE MODULE PROPERTIES
+SEPARATE PLAYERS TO NEW MODULE
 
