@@ -12,6 +12,11 @@ For use **Dev Commands**:
     //example
     bash dev/clear_db.sh all
 
+For create a new **Module**:
+
+    bash dev/create.sh <module_name>
+    //Module name with the next structure: module_name (a-zA-Z_)*
+
 Link for the documentation **Module's Structure**:
 
     https://www.canva.com/design/DAGiwjQKEyo/PS_TP-fXHj36Pf5VNDJ_tA/view

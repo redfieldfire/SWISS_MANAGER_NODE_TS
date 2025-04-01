@@ -1,5 +1,5 @@
 if [ -z "$1" ]; then
-  echo "Usage: ./clear_db.sh <option>"
+  echo "Usage: clear_db.sh <option>"
   echo "Options: 'all' or 'module_name'"
   exit 1
 fi
