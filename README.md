@@ -7,11 +7,10 @@ For run the project with **NodeTS**:
 
 For use **Dev Commands**:
 
-    cd dev
-    bash command_name.sh <option>
+    bash dev/command_name.sh <option> //if required
 
     //example
-    bash clear_db.sh all
+    bash dev/clear_db.sh all
 
 Link for the documentation **Module's Structure**:
 
