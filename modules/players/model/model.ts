@@ -4,6 +4,9 @@ import { BasicModel, GLOBALS } from '../../../globals';
 import { FILE_PATH, HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_DB_PATH_NAME, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
 import { indexModelStructure, modelStructure } from '../DB/structures';
 
+import { Main as User } from '../../users/model';
+import { MODULE_DATA_JSON as user_module_data_json } from '../../users/config';
+
 export class Index implements I_Index {
     
     model = {}
@@ -33,7 +36,7 @@ export class Main implements I_Model {
     constructor({id, user_id, tournament_info}: T_Constructor) {
         this.model.id = id
         this.model.user_id = user_id
-        this.model.user = new Main(GLOBALS[MODULE_DATA_JSON][user_id])
+        this.model.user = new User(GLOBALS[user_module_data_json][user_id])
         if(tournament_info) this.model.tournament_info = tournament_info
     }
 

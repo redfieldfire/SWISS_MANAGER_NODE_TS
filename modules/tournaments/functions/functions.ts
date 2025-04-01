@@ -31,8 +31,10 @@ const basic_controller_functions = new BasicControllerFunctions(
 
                 //---------------------------------------------------------------------- PREPARE THE DATA FOR DB (REMOVE THE MODEL)
                 row.players = row.players.map((item: number, index: number) => {
+                    console.log({item, index})
                     const new_player_resource = new Player({id: index, user_id: item}).model
                     new_player_resource.user = User.BM.resource(new_player_resource.user.model)
+                    console.log(new_player_resource)
                     return new_player_resource
                 })
 
