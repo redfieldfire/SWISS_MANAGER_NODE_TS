@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": 0,
+    "name": "Christopher",
+    "last_name": "Serna Flores",
+    "age": 23,
+    "elo": 1900,
+    "visible": true
+  },
+  {
+    "id": 1,
+    "name": "Mario",
+    "last_name": "Lopez Betancourt",
+    "age": 23,
+    "elo": 1900,
+    "visible": true
+  },
+  {
+    "id": 2,
+    "name": "Javier Ivan",
+    "last_name": "Garcia Veloz",
+    "age": 23,
+    "elo": 1900,
+    "visible": true
+  },
+  {
+    "name": "Erick",
+    "last_name": "Vega Parra",
+    "age": 23,
+    "elo": 1900,
+    "id": 3,
+    "visible": true
+  }
+]

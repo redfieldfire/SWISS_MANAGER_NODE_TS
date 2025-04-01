@@ -33,11 +33,12 @@ export class Main implements I_Model {
         index_model_structure: indexModelStructure
     })
 
-    constructor({id, user_id, tournament_info}: T_Constructor) {
+    constructor({id, user_id, visible, tournament_info}: T_Constructor) {
         this.model.id = id
         this.model.user_id = user_id
         this.model.user = new User(GLOBALS[user_module_data_json][user_id])
         if(tournament_info) this.model.tournament_info = tournament_info
+        this.model.visible = visible ?? true 
     }
 
     buch: T_Buch = () => {

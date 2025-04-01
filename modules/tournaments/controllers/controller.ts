@@ -1,6 +1,6 @@
 import { BasicControllers, ManageResponse } from "../../../globals/classes";
-import { addModel, addPlayerToModel, disableModel, enableModel, getCollection, getModel, updateModel } from "../functions";
-import { addPlayerRequest, modelRequest } from "../requests";
+import { addModel, addPlayerToModel, disableModel, enableModel, getCollection, getModel, removePlayerFromModel, updateModel } from "../functions";
+import { addPlayerRequest, modelRequest, removePlayerRequest } from "../requests";
 import { T_GenericAsyncController } from "../types";
 
 const basic_controllers = new BasicControllers({ modelRequest, getModel, getCollection, addModel, updateModel, disableModel, enableModel})
@@ -16,12 +16,24 @@ export const enable = basic_controllers.enable
 
 export const addPlayer: T_GenericAsyncController = async (req, res) => {
         
-        //-------------------------------------------------REQUEST VALIDATOR
-        const row = addPlayerRequest(req.body, res)
-        if (!row.successful) return row.getResponse()
-        //-------------------------------------------------IF INVALID RETURN ERROR
-    
-        const mr = new ManageResponse()
-        await addPlayerToModel(req, mr, row.data[0])
-        return mr.getResponse()
-    }
+    //-------------------------------------------------REQUEST VALIDATOR
+    const row = addPlayerRequest(req.body, res)
+    if (!row.successful) return row.getResponse()
+    //-------------------------------------------------IF INVALID RETURN ERROR
+
+    const mr = new ManageResponse()
+    await addPlayerToModel(req, mr, row.data[0])
+    return mr.getResponse()
+}
+
+export const removePlayer: T_GenericAsyncController = async (req, res) => {
+        
+    //-------------------------------------------------REQUEST VALIDATOR
+    const row = removePlayerRequest(req.body, res)
+    if (!row.successful) return row.getResponse()
+    //-------------------------------------------------IF INVALID RETURN ERROR
+
+    const mr = new ManageResponse()
+    await removePlayerFromModel(req, mr, row.data[0])
+    return mr.getResponse()
+}

@@ -31,6 +31,7 @@ export type T_BasicModelFunctionDisable = (id: number) => Promise<T_RequestRespo
 export type T_Constructor = {
     id: number,
     user_id: number,
+    visible?: boolean,
     tournament_info?: T_TournamentInfo
 }
 

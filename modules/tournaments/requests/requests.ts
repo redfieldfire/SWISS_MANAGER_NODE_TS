@@ -12,3 +12,7 @@ export const modelRequest: T_Request = (row: T_Model, res: Response) => {
 export const addPlayerRequest: T_Request = (row: T_Model, res: Response) => {
     return validateRequest(row, {user_id: 0}, res)
 }
+
+export const removePlayerRequest: T_Request = (row: T_Model, res: Response) => {
+    return validateRequest(row, {user_id: 0}, res)
+}

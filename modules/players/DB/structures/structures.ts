@@ -13,7 +13,8 @@ export const modelStructure: {[index: string]: any} = {
         black_times: 0,
         points: 0,
         opponents: []
-    }
+    },
+    visible: true
 }
 
 export const indexModelStructure: {[index: string]: any} = {

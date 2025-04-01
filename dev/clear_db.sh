@@ -13,7 +13,7 @@ for module in "$BASE_DIR"/*; do
   FILES_DIR="$module/DB/files"
   INDEX_DIR="$FILES_DIR/index"
 
-  if [[ -d "$FILES_DIR" && ( "../modules/$1" == "$module" || "$1" == "all" ) ]] ; then
+  if [[ -d "$FILES_DIR" && ( "modules/$1" == "$module" || "$1" == "all" ) ]] ; then
 
     echo "$module"
     echo "Cleaning DB............."

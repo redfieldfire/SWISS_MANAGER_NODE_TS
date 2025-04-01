@@ -1,6 +1,6 @@
 import { Request } from "express"
 import { ManageResponse } from "../../../globals/classes"
-import { T_CollectionModel, T_Model } from "./model"
+import { T_Model } from "./model"
 
 export type T_UpdateDataWithoutTrashed = () => Promise<boolean>
 
