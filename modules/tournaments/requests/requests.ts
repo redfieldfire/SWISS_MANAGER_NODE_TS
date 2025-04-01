@@ -8,3 +8,7 @@ export const modelRequest: T_Request = (row: T_Model, res: Response) => {
     const {id, visible, ...rest} = modelStructure
     return validateRequest(row, rest, res)
 }
+
+export const addPlayerRequest: T_Request = (row: T_Model, res: Response) => {
+    return validateRequest(row, {user_id: 0}, res)
+}

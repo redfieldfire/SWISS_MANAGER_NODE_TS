@@ -79,7 +79,11 @@ export class BasicModel implements I_BasicModel{
     };
     get: T_BasicModelFunctionGet = async (page, extraFunction) => {
         const mr = new ManageResponse()
-        var data = this.transformCollection(GLOBALS[this.module_data_json].filter((model) => model.visible).slice((page-1) * 20, page * 20));
+        
+        var data;
+
+        if (!this.has_multiple_files) data = this.transformCollection(GLOBALS[this.module_data_json].filter((model) => model.visible).slice((page-1) * 20, page * 20))
+        else data = this.transformCollectionIndex(GLOBALS[this.module_data_json].filter((model) => model.visible).slice((page-1) * 20, page * 20));
         
         if(extraFunction) {
             const response = await extraFunction(data, mr)
@@ -401,7 +405,7 @@ export class BasicControllers implements I_BasicControllers {
         //-------------------------------------------------IF INVALID RETURN ERROR
     
         const mr = new ManageResponse()
-        await this.addModel(req, mr, row.data[0])
+        mr.successful = await this.addModel(req, mr, row.data[0])
         return mr.getResponse()
     }
     
@@ -413,19 +417,19 @@ export class BasicControllers implements I_BasicControllers {
         //-------------------------------------------------IF INVALID RETURN ERROR
     
         const mr = new ManageResponse()
-        await this.updateModel(req, mr, row.data[0])
+        mr.successful = await this.updateModel(req, mr, row.data[0])
         return mr.getResponse()
     }
     
     enable: T_GenericAsyncController = async (req, res) => {
         const mr = new ManageResponse()
-        await this.enableModel(req, mr)
+        mr.successful = await this.enableModel(req, mr)
         return mr.getResponse()
     }
     
     disable: T_GenericAsyncController = async (req, res) => {
         const mr = new ManageResponse()
-        await this.disableModel(req, mr)
+        mr.successful = await this.disableModel(req, mr)
         return mr.getResponse()
     }
 }
