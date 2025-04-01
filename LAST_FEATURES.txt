@@ -15,4 +15,8 @@ SEPARATE "PLAYERS" TO NEW MODULE
 
 FIX "ALWAYS SUCCESSFUL WITH FALSE"
 
+DATE: 2025/4/01 ---------------------------------------------------------------------
+
+CREATE A DEV BASHES FOR "RUN" AND "CLEAR DB (ALL OR INDIVIDUAL MODULE)"
+
 DATE: -------------------------------------------------------------------------------
