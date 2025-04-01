@@ -1,6 +1,6 @@
 import { I_Index, I_Model } from '../interfaces';
 import { T_Buch, T_Constructor, T_IndexModel,  T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith } from '../types';
-import { BasicModel, GLOBALS } from '../../../globals';
+import { BasicModel, GLOBALS, logError } from '../../../globals';
 import { FILE_PATH, HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_DB_PATH_NAME, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
 import { indexModelStructure, modelStructure } from '../DB/structures';
 
