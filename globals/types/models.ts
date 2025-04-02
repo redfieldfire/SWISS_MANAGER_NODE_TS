@@ -1,5 +1,4 @@
-import { Helpers } from "../classes"
-import { Driver } from "../driver"
+import { BasicModel, ManageResponse } from "../classes"
 import { T_RequestResponse } from "./requests"
 
 export type freeObject = {[index: string]: any}
@@ -53,4 +52,14 @@ export type T_BasicModelConstructor = {
     has_multiple_files: boolean, 
     model_structure: T_Model, 
     index_model_structure: T_IndexModel, 
+}
+
+//---------------------------------------  BASIC MODEL FUNCTIONS
+
+export type T_Save = (mr: ManageResponse) => Promise<boolean>
+
+export type T_BasicDirectConstructor = {
+    BM: BasicModel, 
+    model: Function,
+    resource?: Function
 }

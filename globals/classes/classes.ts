@@ -1,6 +1,6 @@
-import { T_BasicControllerFunctionsContructor, T_BasicModelConstructor, T_BasicModelFunctionCreate, T_BasicModelFunctionDisable, T_BasicModelFunctionEnable, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionUpdate, T_CheckIfExistModel, T_CollectionIndexModel, T_CollectionModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_RequestResponse, T_TransformCollection, T_TransformCollectionIndex, T_TransformIndexResource, T_TransformResource } from './../types';
+import { freeObject, T_BasicControllerFunctionsContructor, T_BasicDirectConstructor, T_BasicModelConstructor, T_BasicModelFunctionCreate, T_BasicModelFunctionDisable, T_BasicModelFunctionEnable, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionUpdate, T_CheckIfExistModel, T_CollectionIndexModel, T_CollectionModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_RequestResponse, T_Save, T_TransformCollection, T_TransformCollectionIndex, T_TransformIndexResource, T_TransformResource } from './../types';
 import { T_BasicControllersConstructor, T_GenericAsyncController, T_GetCollection, T_GetCollectionIndex, T_GetIndexResource, T_GetResource, T_HelperConstructor, T_IndexModel, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_Model, T_ResetTempData, T_SearchId, T_SetResponse, T_UpdateDataWithoutTrashed } from '../types';
-import { I_HelperController, I_Response, I_BasicControllers, I_BasicModel, I_BasicControllerFunctions } from './../interfaces';
+import { I_HelperController, I_Response, I_BasicControllers, I_BasicModel, I_BasicControllerFunctions, I_BasicDirectModel } from './../interfaces';
 import { GLOBALS, updateGlobal } from '../data';
 import { logError } from '../functions';
 import { Driver } from '../driver';
@@ -49,10 +49,10 @@ export class BasicModel implements I_BasicModel{
     )
     indexCollection: T_GetCollectionIndex = (rows) => (rows.map((row) => this.indexResource(row)));
 
-    transformResource: T_TransformResource = (row: T_Model) => new this.Main(row);
+    transformResource: T_TransformResource = (row: T_Model) => new this.Main(row).BDM.resource();
     transformCollection: T_TransformCollection = (rows: T_CollectionModel) => (rows.map((row) => this.transformResource(row)));
 
-    transformIndexResource: T_TransformIndexResource = (row: T_IndexModel) => (new this.Index(row));
+    transformIndexResource: T_TransformIndexResource = (row: T_IndexModel) => (new this.Index(row).model);
     transformCollectionIndex: T_TransformCollectionIndex = (rows: T_CollectionIndexModel) => (rows.map((row) => this.transformIndexResource(row)));
     
     find: T_BasicModelFunctionFind = async (id, search_all, extraFunction) => {
@@ -117,7 +117,6 @@ export class BasicModel implements I_BasicModel{
             const new_index = this.index_model_structure
             new_index.id = collectionIndexModel.length
             new_index.file_name = `${new_index.id}_db.json`
-            collectionIndexModel.push(new_index)
 
             //------------------------------------------------------- CREATE NEW MODEL
 
@@ -125,9 +124,11 @@ export class BasicModel implements I_BasicModel{
             row.visible = true
 
             if(extraFunction) {
-                const response = await extraFunction(row, mr)
+                const response = await extraFunction(new_index, row, mr)
                 if (!response) return mr.getResponse()
             }
+
+            collectionIndexModel.push(new_index)
 
             //------------------------------------------------------- CREATE NEW FILE JSON
             const status_file = await this.helpers.manageWriteJSONError(mr, this.collection([row]), new_index.file_name)
@@ -229,6 +230,46 @@ export class BasicModel implements I_BasicModel{
         return mr.getResponse()
     };
 }
+
+export class BasicDirectModel implements I_BasicDirectModel {
+
+    BM
+    model
+    resource
+
+    constructor({BM, model, resource}: T_BasicDirectConstructor) {
+        this.BM = BM
+        this.model = model
+        if(resource) this.resource = resource
+        else this.resource = () => model
+    }
+
+    async save(mr: ManageResponse) {
+
+        const exists_model = await this.BM.helpers.checkIfExistsModel(GLOBALS[this.BM.module_data_json], this.model().id, mr, true)
+
+        if(!this.BM.has_multiple_files) {
+
+            if (exists_model) {
+                const collectionModel = GLOBALS[this.BM.module_data_json]
+                collectionModel[this.model().id] = this.resource
+                return await this.BM.helpers.manageWriteJSONError(mr, collectionModel)
+            }
+            else return (await this.BM.create(this.resource(), undefined)).successful
+        
+        }
+        else {
+            if (exists_model) {
+                const index = GLOBALS[this.BM.module_data_json][this.model().id]
+                const { file_name } = index as T_IndexModel
+                return await this.BM.helpers.manageWriteJSONError(mr, [this.model()], file_name)
+            }
+            else return (await this.BM.create(this.resource(), undefined)).successful
+        }
+    }
+
+}
+
 export class ManageResponse implements I_Response {
     key_fails = ""
     message_error: string | null = null

@@ -1,6 +1,6 @@
 import { I_Index, I_Model } from '../interfaces';
-import { T_Buch, T_Constructor, T_IndexModel,  T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith } from '../types';
-import { BasicModel, GLOBALS, logError } from '../../../globals';
+import { T_Buch, T_IndexModel,  T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith } from '../types';
+import { BasicDirectModel, BasicModel, GLOBALS } from '../../../globals';
 import { FILE_PATH, HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_DB_PATH_NAME, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
 import { indexModelStructure, modelStructure } from '../DB/structures';
 
@@ -32,13 +32,21 @@ export class Main implements I_Model {
         model_structure: modelStructure, 
         index_model_structure: indexModelStructure
     })
+    BDM
 
-    constructor({id, user_id, visible, tournament_info}: T_Constructor) {
-        this.model.id = id
-        this.model.user_id = user_id
-        this.model.user = new User(GLOBALS[user_module_data_json][user_id])
-        if(tournament_info) this.model.tournament_info = tournament_info
-        this.model.visible = visible ?? true 
+    constructor(model: T_Model) {
+        this.model = model
+        this.BDM = new BasicDirectModel({
+            BM: Main.BM,
+            model: () => this.model,
+            resource: () => {
+                return {
+                    ...this.model,
+                    user: new User(GLOBALS[user_module_data_json][this.model.user_id]).BDM.resource()
+                }
+            }
+        })
+        this.model.user = new User(GLOBALS[user_module_data_json][this.model.user_id])
     }
 
     buch: T_Buch = () => {
@@ -52,6 +60,7 @@ export class Main implements I_Model {
     hasPlayedAndWinWith: T_PlayedAndWinWith = (id) => {
         return Boolean(this.model.tournament_info.opponents.filter((item: T_Opponent) => item.win && item.opponent.model.user_id == id).length)
     }
+
 }
 
 export default Main
