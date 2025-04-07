@@ -1,4 +1,4 @@
-import { freeObject, T_BasicControllerFunctionsContructor, T_BasicDirectConstructor, T_BasicModelConstructor, T_BasicModelFunctionCreate, T_BasicModelFunctionDisable, T_BasicModelFunctionEnable, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionUpdate, T_CheckIfExistModel, T_CollectionIndexModel, T_CollectionModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_RequestResponse, T_Save, T_TransformCollection, T_TransformCollectionIndex, T_TransformIndexResource, T_TransformResource } from './../types';
+import { freeObject, T_BasicControllerFunctionsContructor, T_BasicDirectConstructor, T_BasicModelConstructor, T_BasicModelFunctionCreate, T_BasicModelFunctionDisable, T_BasicModelFunctionEnable, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionUpdate, T_CheckIfExistModel, T_CollectionIndexModel, T_CollectionModel, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_RequestResponse, T_TransformCollection, T_TransformCollectionIndex, T_TransformIndexResource, T_TransformResource } from './../types';
 import { T_BasicControllersConstructor, T_GenericAsyncController, T_GetCollection, T_GetCollectionIndex, T_GetIndexResource, T_GetResource, T_HelperConstructor, T_IndexModel, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_Model, T_ResetTempData, T_SearchId, T_SetResponse, T_UpdateDataWithoutTrashed } from '../types';
 import { I_HelperController, I_Response, I_BasicControllers, I_BasicModel, I_BasicControllerFunctions, I_BasicDirectModel } from './../interfaces';
 import { GLOBALS, updateGlobal } from '../data';
@@ -49,15 +49,37 @@ export class BasicModel implements I_BasicModel{
     )
     indexCollection: T_GetCollectionIndex = (rows) => (rows.map((row) => this.indexResource(row)));
 
-    transformResource: T_TransformResource = (row: T_Model) => new this.Main(row).BDM.resource();
+    transformResource: T_TransformResource = (row: T_Model) => new this.Main(row);
     transformCollection: T_TransformCollection = (rows: T_CollectionModel) => (rows.map((row) => this.transformResource(row)));
 
     transformIndexResource: T_TransformIndexResource = (row: T_IndexModel) => (new this.Index(row).model);
     transformCollectionIndex: T_TransformCollectionIndex = (rows: T_CollectionIndexModel) => (rows.map((row) => this.transformIndexResource(row)));
     
-    find: T_BasicModelFunctionFind = async (id, search_all, extraFunction) => {
+    find: T_BasicModelFunctionFind = async (id, extraFunction) => {
         const mr = new ManageResponse()
-        const exists_model = await this.helpers.checkIfExistsModel(GLOBALS[this.module_data_json], id, mr, search_all)
+        const exists_model = await this.helpers.checkIfExistsModel(GLOBALS[this.module_data_json], id, mr, false)
+        if(!exists_model) return mr.getResponse()
+    
+        var data = []
+
+        if(!this.has_multiple_files) data = this.transformCollection([exists_model])
+        else {
+            const { file_name } = exists_model
+            data = this.transformCollection(await this.driver.getJSON(file_name))
+        }
+
+        if(extraFunction) {
+            const response = await extraFunction(data, mr)
+            if (!response) return mr.getResponse()
+        }
+
+        mr.successful = true
+        mr.data = data
+        return mr.getResponse()
+    };
+    findWithTrashed: T_BasicModelFunctionFind = async (id, extraFunction) => {
+        const mr = new ManageResponse()
+        const exists_model = await this.helpers.checkIfExistsModel(GLOBALS[this.module_data_json], id, mr, true)
         if(!exists_model) return mr.getResponse()
     
         var data = []
@@ -241,7 +263,7 @@ export class BasicDirectModel implements I_BasicDirectModel {
         this.BM = BM
         this.model = model
         if(resource) this.resource = resource
-        else this.resource = () => model
+        else this.resource = () => model()
     }
 
     async save(mr: ManageResponse) {
@@ -252,19 +274,19 @@ export class BasicDirectModel implements I_BasicDirectModel {
 
             if (exists_model) {
                 const collectionModel = GLOBALS[this.BM.module_data_json]
-                collectionModel[this.model().id] = this.resource
+                collectionModel[this.model().id] = this.resource()
                 return await this.BM.helpers.manageWriteJSONError(mr, collectionModel)
             }
-            else return (await this.BM.create(this.resource(), undefined)).successful
+            else return (await this.BM.create(this.resource())).successful
         
         }
         else {
             if (exists_model) {
-                const index = GLOBALS[this.BM.module_data_json][this.model().id]
+                const index = GLOBALS[this.BM.module_data_json][this.resource().id]
                 const { file_name } = index as T_IndexModel
-                return await this.BM.helpers.manageWriteJSONError(mr, [this.model()], file_name)
+                return await this.BM.helpers.manageWriteJSONError(mr, [this.resource()], file_name)
             }
-            else return (await this.BM.create(this.resource(), undefined)).successful
+            else return (await this.BM.create(this.resource())).successful
         }
     }
 
@@ -507,8 +529,10 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
     getModel: T_DefaultControllerFunction = async(req, mr) => {
         return this.helpers.managePromiseError(async () => {
             const id: number = parseInt(req.params.id)
-            const model: T_RequestResponse = await this.BM.find(id, null, this.getModelExtraFunction)
-            mr.data = model.data
+            const model: T_RequestResponse = await this.BM.find(id, this.getModelExtraFunction)
+            var data = model.data
+            if(model.successful) data = [(model.data[0] as typeof this.BM.Main).BDM.resource()]
+            mr.data = data
             mr.message_error = model.message
             return model.successful
         }, mr, "GET MODEL")
@@ -517,7 +541,11 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
         return this.helpers.managePromiseError(async () => {
             const page: number = parseInt(req.params.page)
             const collection: T_RequestResponse = await this.BM.get(page, this.getCollectionExtraFunction)
-            mr.data = collection.data
+            var data = collection.data
+            if(collection.successful) {
+                if(!this.BM.has_multiple_files) data = collection.data.map((item: typeof this.BM.Main) => item.BDM.resource())
+            }
+            mr.data = data
             mr.message_error = collection.message
             return collection.successful
         }, mr, "GET COLLECTION")
@@ -525,7 +553,12 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
     addModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
         return this.helpers.managePromiseError(async () => {
             const added_model: T_RequestResponse = await this.BM.create(row, this.addModelExtraFunction)
-            mr.data = added_model.data
+            var data = added_model.data
+            if(added_model.successful) {
+                if(!this.BM.has_multiple_files) data = [(added_model.data[0] as typeof this.BM.Main).BDM.resource()]
+                else data[1] = [(added_model.data[1] as typeof this.BM.Main).BDM.resource()]
+            }
+            mr.data = data
             mr.message_error = added_model.message
             return added_model.successful
         }, mr, "ADD MODEL")
@@ -534,7 +567,9 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
         return this.helpers.managePromiseError(async () => {
             const id: number = parseInt(req.params.id)
             const updated_model: T_RequestResponse = await this.BM.update(id, row, this.updateModelExtraFunction)
-            mr.data = updated_model.data
+            var data = updated_model.data
+            if(updated_model.successful) data = [(updated_model.data[0] as typeof this.BM.Main).BDM.resource()]
+            mr.data = data
             mr.message_error = updated_model.message
             return updated_model.successful
         }, mr, "UPDATE MODEL")
@@ -543,7 +578,9 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
         return this.helpers.managePromiseError(async () => {
             const id: number = parseInt(req.params.id)
             const disable_model: T_RequestResponse = await this.BM.disable(id, this.disableModeExtraFunction)
-            mr.data = disable_model.data
+            var data = disable_model.data
+            if(disable_model.successful) data = [(disable_model.data[0] as typeof this.BM.Main).BDM.resource()]
+            mr.data = data
             mr.message_error = disable_model.message
             return disable_model.successful
         }, mr, "DISABLE MODEL")
@@ -552,7 +589,9 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
         return this.helpers.managePromiseError(async () => {
             const id: number = parseInt(req.params.id)
             const enable_model: T_RequestResponse = await this.BM.enable(id, this.enableModelExtraFunction)
-            mr.data = enable_model.data
+            var data = enable_model.data
+            if(enable_model.successful) data = [(enable_model.data[0] as typeof this.BM.Main).BDM.resource()]
+            mr.data = data
             mr.message_error = enable_model.message
             return enable_model.successful
         }, mr, "ENABLE MODEL")

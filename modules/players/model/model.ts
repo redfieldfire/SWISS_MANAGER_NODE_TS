@@ -1,11 +1,11 @@
 import { I_Index, I_Model } from '../interfaces';
-import { T_Buch, T_IndexModel,  T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith } from '../types';
-import { BasicDirectModel, BasicModel, GLOBALS } from '../../../globals';
+import { T_IndexModel,  T_LikeOpponent,  T_Model, T_Opponent, T_PlayedAndWinWith, T_PlayedWith } from '../types';
+import { BasicDirectModel, BasicModel, freeObject, GLOBALS } from '../../../globals';
 import { FILE_PATH, HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_DB_PATH_NAME, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
 import { indexModelStructure, modelStructure } from '../DB/structures';
 
-import { Main as User } from '../../users/model';
 import { MODULE_DATA_JSON as user_module_data_json } from '../../users/config';
+import { Main as Tournament } from '../../tournaments/model';
 
 export class Index implements I_Index {
     
@@ -42,23 +42,64 @@ export class Main implements I_Model {
             resource: () => {
                 return {
                     ...this.model,
-                    user: new User(GLOBALS[user_module_data_json][this.model.user_id]).BDM.resource()
+                    user: GLOBALS[user_module_data_json][this.model.user_id]
                 }
             }
         })
-        this.model.user = new User(GLOBALS[user_module_data_json][this.model.user_id])
     }
 
-    buch: T_Buch = () => {
-        return this.model.tournament_info.opponents.reduce((accum: number, item: T_Opponent) => accum + (item.win ? item.opponent.model.tournament_info.points : 0), 0)
+    //-------------------------------------   RELATIONS/CONVERTIONS
+
+    user() {
+        return GLOBALS[user_module_data_json][this.model.user_id]
+    }
+
+    name() {
+        return this.user().name
+    }
+
+    async tournament() {
+        return (await Tournament.BM.find(this.model.tournament_id)).data[0] as Tournament
+    }
+
+    async buch () {
+        return (await this.opponents()).reduce((accum: number, item: freeObject) => accum + (item.win ? item.player.tournament_info.points : 0), 0)
     };
 
+    async opponents() {
+
+        const tournament = await this.tournament()
+
+        if(this.model.tournament_info.opponents) {
+            return this.model.tournament_info.opponents.map(async (opponent: T_Opponent) => {
+                return {
+                    ...opponent,
+                    user: this.user(),
+                    player: tournament.searchPlayerBy(opponent.player_id)
+                }
+            })
+        }
+        return []
+    }
+
+    //-------------------------------------------------------------
+
+    likeOponent: T_LikeOpponent = (color, win, round) => {
+        return {
+            player_id: this.model.id,
+            user_id: this.model.user_id,
+            color: color,
+            win: win,
+            round: round
+        }
+    }
+
     hasPlayedWith: T_PlayedWith = (id) => {
-       return Boolean(this.model.tournament_info.opponents.filter((item: T_Opponent) => item.opponent.model.user_id == id).length)
+       return Boolean(this.model.tournament_info.opponents.filter((item: T_Opponent) => item.user_id == id).length)
     }
 
     hasPlayedAndWinWith: T_PlayedAndWinWith = (id) => {
-        return Boolean(this.model.tournament_info.opponents.filter((item: T_Opponent) => item.win && item.opponent.model.user_id == id).length)
+        return Boolean(this.model.tournament_info.opponents.filter((item: T_Opponent) => item.win && item.user_id == id).length)
     }
 
 }

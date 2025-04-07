@@ -19,5 +19,9 @@ DATE: 2025/4/01 ----------------------------------------------------------------
 
     CREATE A DEV BASHES FOR "RUN" AND "CLEAR DB (ALL OR INDIVIDUAL MODULE)"
     CREATE A "DEV COMMANDS" FOR "RUN, CREATE MODULE, AND CLEAN DB"
+    CREATE BM AND BDM
 
-DATE: -------------------------------------------------------------------------------
+DATE: 2025/4/07 ---------------------------------------------------------------------
+
+    CREATE MODULE "ROUNDS"
+    CREATE AN API FOR "MAKE-ROUND"

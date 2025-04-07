@@ -1,20 +1,26 @@
-import { T_DefaultControllerFunctionWithRow, T_UpdateDataWithoutTrashed } from '../types/functions';
+import { T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_UpdateDataWithoutTrashed } from '../types/functions';
 
 import { BasicControllerFunctions, ManageResponse, T_RequestResponse } from '../../../globals';
-import { Main } from '../model';
+
 import { T_IndexModel, T_Model } from '../types';
 import { T_Model as T_ModelPlayer } from '../../players/types';
 
 import { Main as Player } from '../../players/model';
 import { Main as User } from '../../users/model';
+import { Main as Round } from '../../rounds/model';
+import { Main as Tournament} from '../model';
 
 import { modelStructure as playerStructure } from '../../players/DB/structures';
+import { modelStructure as roundStructure } from '../../rounds/DB/structures';
 
-export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => Main.BM.helpers.updateDataWithoutTrashed()
+export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => Tournament.BM.helpers.updateDataWithoutTrashed()
 const basic_controller_functions = new BasicControllerFunctions(
     {
-        BM: Main.BM,
+        BM: Tournament.BM,
         addModelExtraFunction: async (index: T_IndexModel, row: T_Model, mr: ManageResponse) => {
+
+            index.name = row.head.name
+
             if (row.players.length) {
 
                 const uniques: Array<number> = row.players.filter((user_id: number) => row.players.indexOf(user_id) === row.players.lastIndexOf(user_id))
@@ -30,16 +36,8 @@ const basic_controller_functions = new BasicControllerFunctions(
                     }
                 }
 
-                //---------------------------------------------------------------------- PREPARE THE DATA FOR DB (REMOVE THE MODEL)
-                row.players = row.players.map((item: number, index: number) => 
-                    new Player(
-                        {
-                            ...playerStructure,
-                            id: index, 
-                            user_id: item
-                        }
-                    ).BDM.resource()
-                )
+                //---------------------------------------------------------------------- CREATE INTERNAL PLAYERS
+                row.players = await row.players.map((item: number, index: number) => new Player({...playerStructure, id: index, tournament_id: row.id, user_id: item}).BDM.resource())
             }
             return true
         }
@@ -57,7 +55,7 @@ export const disableModel = basic_controller_functions.disableModel
 //------------------------------------------------------------
 
 export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return Main.BM.helpers.managePromiseError(async () => {
+    return Tournament.BM.helpers.managePromiseError(async () => {
 
         //------------------------------------------------------- CHECK IF EXISTS USER WITH ID
         const user_id: number = parseInt(row.user_id)
@@ -70,33 +68,40 @@ export const addPlayerToModel: T_DefaultControllerFunctionWithRow = async (req, 
 
         //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
         const model_index_id: number = parseInt(req.params.id)
-        const exists_model: T_RequestResponse = await Main.BM.find(model_index_id)
+        const exists_model: T_RequestResponse = await Tournament.BM.find(model_index_id)
         if(!exists_model.successful) {
             mr.message_error = exists_model.message
             return false
         }
 
-        const tournament: Main = exists_model.data[0] as Main
+        const tournament: Tournament = exists_model.data[0] as Tournament
 
         const repeated_player: T_ModelPlayer | undefined = tournament.searchPlayerBy(user_id)
 
         if(repeated_player) {
-            if(!repeated_player.visible) tournament.searchPlayerBy(user_id).visible = true
+            if(!repeated_player.model.visible) tournament.searchPlayerBy(user_id).model.visible = true
             else {
                 mr.message_error = `The user with the id ${user_id} is duplicated`
                 return false
             }
         }
-        else tournament.model.players.push(new Player({id: tournament.model.players.length, user_id: user_id}))
+
+        else {
+
+            const new_player = new Player({...playerStructure, id: tournament.model.players.lentgh, tournament_id: tournament.model.id, user_id: user_id})
+            tournament.model.players.push(new_player)
+
+        }
+
 
         const status = await tournament.BDM.save(mr)
-        return Main.BM.helpers.manageResponseData(mr, status, [tournament])
+        return Tournament.BM.helpers.manageResponseData(mr, status, [tournament.BDM.resource()])
 
     }, mr, "ADD PLAYER TO MODEL")
 }
 
 export const removePlayerFromModel: T_DefaultControllerFunctionWithRow = async (req, mr, row) => {
-    return Main.BM.helpers.managePromiseError(async () => {
+    return Tournament.BM.helpers.managePromiseError(async () => {
 
         //------------------------------------------------------- CHECK IF EXISTS USER WITH ID
         const user_id: number = parseInt(row.user_id)
@@ -108,23 +113,50 @@ export const removePlayerFromModel: T_DefaultControllerFunctionWithRow = async (
 
         //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
         const model_index_id: number = parseInt(req.params.id)
-        const exists_model: T_RequestResponse = await Main.BM.find(model_index_id)
+        const exists_model: T_RequestResponse = await Tournament.BM.findWithTrashed(model_index_id)
         if(!exists_model.successful) {
             mr.message_error = exists_model.message
             return false
         }
 
-        const tournament: Main = exists_model.data[0] as Main
+        const tournament: Tournament = exists_model.data[0] as Tournament
 
         const found_player: T_ModelPlayer | undefined = tournament.searchPlayerWithoutTrashedBy(user_id)
-        if(found_player)  tournament.searchPlayerWithoutTrashedBy(user_id).visible = false
+        if(found_player)  tournament.searchPlayerWithoutTrashedBy(user_id).model.visible = false
         else {
             mr.message_error = `The user with the id ${user_id} isn't in this tournament`
             return false
         }
 
         const status = await tournament.BDM.save(mr)
-        return Main.BM.helpers.manageResponseData(mr, status, [tournament])
+        return Tournament.BM.helpers.manageResponseData(mr, status, [tournament.BDM.resource()])
 
     }, mr, "REMOVE PLAYER TO MODEL")
+}
+
+export const addRoundToModel: T_DefaultControllerFunction = async (req, mr) => {
+    return Tournament.BM.helpers.managePromiseError(async () => {
+
+
+        //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
+        const model_index_id: number = parseInt(req.params.id)
+        const exists_model: T_RequestResponse = await Tournament.BM.find(model_index_id)
+        if(!exists_model.successful) {
+            mr.message_error = exists_model.message
+            return false
+        }
+
+        //------------------------------------------------------- ADD EMPTY ROUND
+
+        const tournament: Tournament = exists_model.data[0] as Tournament
+
+        const new_round: Round = new Round(roundStructure)
+        new_round.makePairings(await tournament.orderPlayers())
+
+        tournament.model.rounds.push(new_round)
+
+        const status = await tournament.BDM.save(mr)
+        return Tournament.BM.helpers.manageResponseData(mr, status, [tournament.BDM.resource()])
+
+    }, mr, "ADD ROUND TO MODEL")
 }

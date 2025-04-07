@@ -1,6 +1,5 @@
 import { T_RequestResponse } from "../../../globals"
 import { indexModelStructure, modelStructure } from "../DB/structures"
-import { Main as User } from "../../users/model"
 
 //---------------------------------------- MODELS
 
@@ -25,39 +24,13 @@ export type T_BasicModelFunctionUpdate = (id: number, row: T_Model) => Promise<T
 export type T_BasicModelFunctionEnable = (id: number) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionDisable = (id: number) => Promise<T_RequestResponse>
 
-//--------------------------------------- EXTRA
+//---------------------------------------
 
-export type T_Constructor = {
-    id: number,
-    user_id: number,
-    visible?: boolean,
-    tournament_info?: T_TournamentInfo
+export type T_Pair = {
+    white: string,
+    white_id: number,
+    black: string,
+    black_id: number,
+    outcome: number
 }
-
-export type T_Opponent = {
-    player_id: number
-    user_id: number,
-    color: number,
-    win: boolean | null,
-    round: number
-}
-
-export type T_Info = {
-    user: User,
-    points: number,
-    buch: number
-}
-
-export type T_TournamentInfo = {
-    has_bay: boolean
-    last_color: boolean | null
-    white_times: number
-    black_times: number
-    points: number
-    opponents: Array<T_Opponent>
-}
-
-export type T_LikeOpponent = (color: number, win: boolean | null, round: number) => T_Opponent
-export type T_PlayedWith = (id: number) => boolean
-export type T_PlayedAndWinWith = (id: number) => boolean
 

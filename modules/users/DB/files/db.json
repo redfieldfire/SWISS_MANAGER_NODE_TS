@@ -4,12 +4,12 @@
     "name": "Christopher",
     "last_name": "Serna Flores",
     "age": 23,
-    "elo": 1900,
+    "elo": 1950,
     "visible": true
   },
   {
     "id": 1,
-    "name": "Mario",
+    "name": "Mario Ivan",
     "last_name": "Lopez Betancourt",
     "age": 23,
     "elo": 1900,
@@ -24,11 +24,11 @@
     "visible": true
   },
   {
+    "id": 3,
     "name": "Erick",
     "last_name": "Vega Parra",
     "age": 23,
     "elo": 1900,
-    "id": 3,
     "visible": true
   }
 ]

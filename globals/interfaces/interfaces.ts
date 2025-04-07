@@ -1,6 +1,6 @@
 import { BasicModel, Helpers } from "../classes"
 import { Driver } from "../driver"
-import { T_GetCollection, T_GetCollectionIndex, T_CheckIfExistModel, T_GetJSON, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_ResetTempData, T_SearchId, T_SetResponse, T_UpdateDataWithoutTrashed, T_WriteJSON, T_GenericAsyncController, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_Request, T_GetResource, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionCreate, T_BasicModelFunctionUpdate, T_BasicModelFunctionEnable, T_BasicModelFunctionDisable, T_Collection, T_CollectionIndex, T_Model, T_IndexModel, T_TransformCollection, T_TransformResource, T_TransformIndexResource, freeObject, T_Save } from "../types"
+import { T_GetCollection, T_GetCollectionIndex, T_CheckIfExistModel, T_GetJSON, T_ManagePromiseError, T_manageResponseData, T_ManageWriteJSONError, T_ResetTempData, T_SearchId, T_SetResponse, T_UpdateDataWithoutTrashed, T_WriteJSON, T_GenericAsyncController, T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_Request, T_GetResource, T_BasicModelFunctionFind, T_BasicModelFunctionGet, T_BasicModelFunctionCreate, T_BasicModelFunctionUpdate, T_BasicModelFunctionEnable, T_BasicModelFunctionDisable, T_Collection, T_CollectionIndex, T_Model, T_IndexModel, T_TransformCollection, T_TransformResource, T_TransformIndexResource, freeObject, T_Save, T_BasicModelFunctionFindWithTrashed } from "../types"
 
 export interface I_BasicModel {
     Main: any
@@ -22,6 +22,7 @@ export interface I_BasicModel {
     driver: Driver
 
     find: T_BasicModelFunctionFind
+    findWithTrashed: T_BasicModelFunctionFindWithTrashed
     get: T_BasicModelFunctionGet
     create: T_BasicModelFunctionCreate
     update: T_BasicModelFunctionUpdate

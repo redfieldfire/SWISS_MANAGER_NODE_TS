@@ -33,7 +33,8 @@ export type T_TransformCollectionIndex = (rows: T_CollectionIndexModel) => Array
 
 //---------------------------------------- BASIC MODEL FUNCTIONS
 
-export type T_BasicModelFunctionFind = (id: number, search_all?: boolean | null, extraFunction?: Function) => Promise<T_RequestResponse>
+export type T_BasicModelFunctionFind = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
+export type T_BasicModelFunctionFindWithTrashed = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionGet = (page: number, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionCreate = (row: T_Model, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionUpdate = (id: number, row: T_Model, extraFunction?: Function) => Promise<T_RequestResponse>
@@ -41,25 +42,25 @@ export type T_BasicModelFunctionEnable = (id: number, extraFunction?: Function) 
 export type T_BasicModelFunctionDisable = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
 
 export type T_BasicModelConstructor = {
-    Main: any
-    Index: any
-    module_name: string, 
-    module_data_json: string, 
-    index_sub_path: string, 
-    file_path: string,
-    main_db_path_name: string,
-    main_index_path_name: string, 
-    has_multiple_files: boolean, 
-    model_structure: T_Model, 
-    index_model_structure: T_IndexModel, 
+  Main: any
+  Index: any
+  module_name: string, 
+  module_data_json: string, 
+  index_sub_path: string, 
+  file_path: string,
+  main_db_path_name: string,
+  main_index_path_name: string, 
+  has_multiple_files: boolean, 
+  model_structure: T_Model, 
+  index_model_structure: T_IndexModel, 
 }
 
-//---------------------------------------  BASIC MODEL FUNCTIONS
+//--------------------------------------- BASIC MODEL FUNCTIONS
 
 export type T_Save = (mr: ManageResponse) => Promise<boolean>
 
 export type T_BasicDirectConstructor = {
-    BM: BasicModel, 
-    model: Function,
-    resource?: Function
+  BM: BasicModel, 
+  model: Function,
+  resource?: Function
 }

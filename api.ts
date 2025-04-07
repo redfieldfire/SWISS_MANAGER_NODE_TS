@@ -2,7 +2,10 @@ import express from 'express'
 import { init } from './init'
 
 const app = express();
+const cors = require('cors');
+
 app.use(express.json());
+app.use(cors())
 
 const PORT: number = 3000;
 

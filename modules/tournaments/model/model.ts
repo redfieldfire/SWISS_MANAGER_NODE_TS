@@ -1,11 +1,16 @@
 import { I_Index, I_Model } from '../interfaces';
 import { T_IndexModel,  T_Model } from '../types';
-import { BasicDirectModel, BasicModel } from '../../../globals';
+import { BasicDirectModel, BasicModel, freeObject, GLOBALS } from '../../../globals';
 import { FILE_PATH, HAS_MULTIPLE_FILES, INDEX_SUB_PATH, MAIN_DB_PATH_NAME, MAIN_INDEX_PATH_NAME, MODULE_DATA_JSON, MODULE_NAME } from '../config';
 import { indexModelStructure, modelStructure } from '../DB/structures';
 
-import { T_Model as T_ModelPlayer, T_Collection as T_Players } from '../../players/types';
+import { T_Model as T_Player } from '../../players/types';
+import { T_Model as T_Round } from '../../rounds/types';
+
+import { MODULE_DATA_JSON as users_data_json } from '../../users/config';
+
 import { Main as Player } from '../../players/model';
+import { Main as Round } from '../../rounds/model';
 
 export class Index implements I_Index {
     
@@ -36,25 +41,35 @@ export class Main implements I_Model {
 
     constructor(model: T_Model) {
         this.model = model
+        this.model.players = this.model.players.map((player: T_Player) => new Player(player))
+        this.model.rounds = this.model.rounds.map((round: T_Round) => new Round(round))
         this.BDM = new BasicDirectModel({
             BM: Main.BM,
             model: () => this.model,
             resource: () => {
                 return {
                     ...this.model,
-                    players: this.model.players.map((player: Player) => new Player(player.model).BDM.resource())
+                    players: this.model.players.map((player: Player) => player.BDM.resource()),
+                    rounds: this.model.rounds.map((round: Round) => round.BDM.resource())
                 }
             }
         })
-        this.model.players = this.model.players.map((player: T_ModelPlayer) => new Player({id: player.id, user_id: player.user_id, visible: player.visible, tournament_info: player.tournament_info}))
     }
 
     searchPlayerBy(user_id: number) {
         return this.model.players.find((player: Player) => player.model.user_id == user_id)
     }
 
+    playersWithoutTrashed() {
+        return this.model.players.filter((player: Player) => player.model.visible)
+    }
+
     searchPlayerWithoutTrashedBy(user_id: number) {
         return this.model.players.find((player: Player) => player.model.user_id == user_id && player.model.visible)
+    }
+
+    async orderPlayers() {
+        return await this.model.players.sort(async (a: Player, b: Player) => a.model.tournament_info.points + b.model.tournament_info.points && (await a.buch()) + (await b.buch()))
     }
 
 }
