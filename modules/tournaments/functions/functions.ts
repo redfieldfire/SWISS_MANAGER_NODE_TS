@@ -1,6 +1,6 @@
 import { T_DefaultControllerFunction, T_DefaultControllerFunctionWithRow, T_UpdateDataWithoutTrashed } from '../types/functions';
 
-import { BasicControllerFunctions, ManageResponse, T_RequestResponse } from '../../../globals';
+import { BasicControllerFunctions, freeObject, ManageResponse, T_RequestResponse } from '../../../globals';
 
 import { T_IndexModel, T_Model } from '../types';
 import { T_Model as T_ModelPlayer } from '../../players/types';
@@ -159,4 +159,31 @@ export const addRoundToModel: T_DefaultControllerFunction = async (req, mr) => {
         return Tournament.BM.helpers.manageResponseData(mr, status, [tournament.BDM.resource()])
 
     }, mr, "ADD ROUND TO MODEL")
+}
+
+export const getPlayerFromModel: T_DefaultControllerFunction = async (req, mr) => {
+    return Tournament.BM.helpers.managePromiseError(async () => {
+
+
+        //------------------------------------------------------- CHECK IF EXISTS THE TOURNAMENT
+        const model_index_id: number = parseInt(req.params.id)
+        const exists_model: T_RequestResponse = await Tournament.BM.find(model_index_id)
+        if(!exists_model.successful) {
+            mr.message_error = exists_model.message
+            return false
+        }
+
+        //------------------------------------------------------- CHECK IF EXISTS THE PLAYER INTO THE TOURNAMENT
+        const player_id: number = parseInt(req.params.idplayer)
+        const exists_player_in_model: Player = (exists_model.data[0] as Tournament).searchPlayerBy(player_id)
+        if(!exists_player_in_model) {
+            mr.message_error = `The player with the id ${player_id} doesn't exists`
+            return false
+        }
+
+        exists_player_in_model.model.tournament_info.opponents = (await exists_player_in_model.opponents()).map((opponent: freeObject) => opponent.player.BDM.resource())
+
+        return Tournament.BM.helpers.manageResponseData(mr, true, [exists_player_in_model.BDM.resource()])
+
+    }, mr, "GET PLAYER FROM MODEL")
 }

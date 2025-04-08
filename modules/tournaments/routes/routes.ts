@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { add, addPlayer, addRound, disable, enable, get, getAll, removePlayer, update } from '../controllers';
+import { add, addPlayer, addRound, disable, enable, get, getAll, getPlayer, removePlayer, update } from '../controllers';
 import { createBasicRoutes } from '../../../globals';
 
 const router = Router();
@@ -10,8 +10,16 @@ router.put('/:id/add-player', async (req: Request, res: Response) => {
     res.json(await addPlayer(req, res))
 })
 
-router.put('/:id/remove-player', async (req: Request, res: Response) => {
-    res.json(await removePlayer(req, res))
+router.put('/:id/add-next-round', async (req: Request, res: Response) => {
+    res.json(await addRound(req, res))
+})
+
+router.get('/:id/players', async (req: Request, res: Response) => {
+    //res.json(await addRound(req, res))
+})
+
+router.get('/:id/players/:idplayer', async (req: Request, res: Response) => {
+    res.json(await getPlayer(req, res))
 })
 
 router.put('/:id/add-next-round', async (req: Request, res: Response) => {

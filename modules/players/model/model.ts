@@ -71,7 +71,7 @@ export class Main implements I_Model {
         const tournament = await this.tournament()
 
         if(this.model.tournament_info.opponents) {
-            return this.model.tournament_info.opponents.map(async (opponent: T_Opponent) => {
+            return this.model.tournament_info.opponents.map((opponent: T_Opponent) => {
                 return {
                     ...opponent,
                     user: this.user(),

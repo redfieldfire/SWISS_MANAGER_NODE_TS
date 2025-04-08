@@ -1,5 +1,5 @@
 import { BasicControllers, ManageResponse } from "../../../globals/classes";
-import { addModel, addPlayerToModel, addRoundToModel, disableModel, enableModel, getCollection, getModel, removePlayerFromModel, updateModel } from "../functions";
+import { addModel, addPlayerToModel, addRoundToModel, disableModel, enableModel, getCollection, getModel, getPlayerFromModel, removePlayerFromModel, updateModel } from "../functions";
 import { addPlayerRequest, modelRequest, removePlayerRequest } from "../requests";
 import { T_GenericAsyncController } from "../types";
 
@@ -42,5 +42,12 @@ export const addRound: T_GenericAsyncController = async (req, res) => {
 
     const mr = new ManageResponse()
     await addRoundToModel(req, mr)
+    return mr.getResponse()
+}
+
+export const getPlayer: T_GenericAsyncController = async (req, res) => {
+
+    const mr = new ManageResponse()
+    await getPlayerFromModel(req, mr)
     return mr.getResponse()
 }
