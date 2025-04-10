@@ -173,15 +173,20 @@ export const getPlayerFromModel: T_DefaultControllerFunction = async (req, mr) =
             return false
         }
 
+        const tournament = (exists_model.data[0] as Tournament)
+
         //------------------------------------------------------- CHECK IF EXISTS THE PLAYER INTO THE TOURNAMENT
         const player_id: number = parseInt(req.params.idplayer)
-        const exists_player_in_model: Player = (exists_model.data[0] as Tournament).searchPlayerBy(player_id)
+        const exists_player_in_model: Player = tournament.searchPlayerBy(player_id)
         if(!exists_player_in_model) {
             mr.message_error = `The player with the id ${player_id} doesn't exists`
             return false
         }
 
-        exists_player_in_model.model.tournament_info.opponents = (await exists_player_in_model.opponents()).map((opponent: freeObject) => opponent.player.BDM.resource())
+        const player = exists_player_in_model
+
+        player.model.tournament_info.opponents = (await player.opponents()).map((opponent: freeObject) => opponent.player.BDM.resource())
+        player.model.tournament_info.rounds = tournament.roundsByPlayer(player.model.id)
 
         return Tournament.BM.helpers.manageResponseData(mr, true, [exists_player_in_model.BDM.resource()])
 

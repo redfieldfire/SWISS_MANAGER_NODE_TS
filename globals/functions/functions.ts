@@ -20,6 +20,12 @@ export const validateRequest: T_ValidateRequest = (request: any, validator: any,
             mr.message_error = `The field ${key} needs to be: ${typeof validator[key]}`
             return false
         }
+        if (typeof request[key] == typeof "string") {
+            if(!(request[key].trim().length)) {
+                mr.message_error = `The field ${key} can't be empty`
+                return false
+            }
+        }
         return true
     });
     if(mr.successful) {

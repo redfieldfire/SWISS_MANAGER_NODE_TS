@@ -72,6 +72,15 @@ export class Main implements I_Model {
         return await this.model.players.sort(async (a: Player, b: Player) => a.model.tournament_info.points + b.model.tournament_info.points && (await a.buch()) + (await b.buch()))
     }
 
+    roundsByPlayer(player_id: number) {
+        return this.model.rounds.map((round: Round) => {
+            return {
+                id: round.model.id,
+                pair: round.model.pairings.find((item: freeObject) => item.white_id == player_id || item.black_id == player_id)
+            }
+        })
+    }
+
 }
 
 export default Main
