@@ -99,13 +99,44 @@ export class BasicModel implements I_BasicModel{
         mr.data = data
         return mr.getResponse()
     };
-    get: T_BasicModelFunctionGet = async (page, extraFunction) => {
+    get: T_BasicModelFunctionGet = async (page, filters, extraFunction) => {
         const mr = new ManageResponse()
         
         var data;
 
-        if (!this.has_multiple_files) data = this.transformCollection(GLOBALS[this.module_data_json].filter((model) => model.visible).slice((page-1) * 20, page * 20))
-        else data = this.transformCollectionIndex(GLOBALS[this.module_data_json].filter((model) => model.visible).slice((page-1) * 20, page * 20));
+        if (!this.has_multiple_files) 
+            data = this.transformCollection(GLOBALS[this.module_data_json]
+                       .filter((model) => 
+                            {
+                                const queryParams = filters ?? {}
+                                if (Object.keys(queryParams).length === 0) return model.visible
+                                else {
+                                    return Object.keys(queryParams).every((key: string) => {
+                                        if (key in model) {
+                                            if (typeof model[key] == typeof "")  return model[key].toLowerCase().includes(queryParams[key].toLowerCase()) && model.visible
+                                            else if (typeof model[key] == typeof 0) return (model[key] + "").includes(queryParams[key] + "") && model.visible
+                                        }
+                                        return true
+                                    })
+                                }
+                            }
+                        ).slice((page-1) * 20, page * 20))
+        else data = this.transformCollectionIndex(GLOBALS[this.module_data_json]
+                        .filter((model) => 
+                            {
+                                const queryParams = filters ?? {}
+                                if (Object.keys(queryParams).length === 0) return model.visible
+                                else {
+                                    return Object.keys(queryParams).every((key: string) => {
+                                        if (key in model) {
+                                            if (typeof model[key] == typeof "")  return model[key].toLowerCase().includes(queryParams[key].toLowerCase()) && model.visible
+                                            else if (typeof model[key] == typeof 0) return (model[key] + "").includes(queryParams[key] + "") && model.visible
+                                        }
+                                        return true
+                                    })
+                                }
+                            }
+                        ).slice((page-1) * 20, page * 20));
         
         if(extraFunction) {
             const response = await extraFunction(data, mr)
@@ -540,7 +571,7 @@ export class BasicControllerFunctions implements I_BasicControllerFunctions {
     getCollection: T_DefaultControllerFunction = async (req, mr) => {
         return this.helpers.managePromiseError(async () => {
             const page: number = parseInt(req.params.page)
-            const collection: T_RequestResponse = await this.BM.get(page, this.getCollectionExtraFunction)
+            const collection: T_RequestResponse = await this.BM.get(page, req.query, this.getCollectionExtraFunction)
             var data = collection.data
             if(collection.successful) {
                 if(!this.BM.has_multiple_files) data = collection.data.map((item: typeof this.BM.Main) => item.BDM.resource())

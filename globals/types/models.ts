@@ -35,7 +35,7 @@ export type T_TransformCollectionIndex = (rows: T_CollectionIndexModel) => Array
 
 export type T_BasicModelFunctionFind = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionFindWithTrashed = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
-export type T_BasicModelFunctionGet = (page: number, extraFunction?: Function) => Promise<T_RequestResponse>
+export type T_BasicModelFunctionGet = (page: number, filters?: freeObject, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionCreate = (row: T_Model, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionUpdate = (id: number, row: T_Model, extraFunction?: Function) => Promise<T_RequestResponse>
 export type T_BasicModelFunctionEnable = (id: number, extraFunction?: Function) => Promise<T_RequestResponse>
