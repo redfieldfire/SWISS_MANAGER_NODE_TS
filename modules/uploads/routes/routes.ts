@@ -13,7 +13,7 @@ createBasicRoutes(router, add, get, getAll, update, disable, enable)
 
 const storage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+    filename: (req, file, cb) => cb(null, `${new Date().toLocaleDateString('en-US').replace(/\//g, '-')}-${file.originalname.replace(/[^\w.-]/g, '-')}`),
 });
 
 const upload = multer({ storage });
