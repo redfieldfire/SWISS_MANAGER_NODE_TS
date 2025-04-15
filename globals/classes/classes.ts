@@ -111,7 +111,7 @@ export class BasicModel implements I_BasicModel{
                                 const queryParams = filters ?? {}
                                 if (Object.keys(queryParams).length === 0) return model.visible
                                 else {
-                                    return Object.keys(queryParams).every((key: string) => {
+                                    return Object.keys(queryParams).some((key: string) => {
                                         if (key in model) {
                                             if (typeof model[key] == typeof "")  return model[key].toLowerCase().includes(queryParams[key].toLowerCase()) && model.visible
                                             else if (typeof model[key] == typeof 0) return (model[key] + "").includes(queryParams[key] + "") && model.visible
@@ -127,7 +127,7 @@ export class BasicModel implements I_BasicModel{
                                 const queryParams = filters ?? {}
                                 if (Object.keys(queryParams).length === 0) return model.visible
                                 else {
-                                    return Object.keys(queryParams).every((key: string) => {
+                                    return Object.keys(queryParams).some((key: string) => {
                                         if (key in model) {
                                             if (typeof model[key] == typeof "")  return model[key].toLowerCase().includes(queryParams[key].toLowerCase()) && model.visible
                                             else if (typeof model[key] == typeof 0) return (model[key] + "").includes(queryParams[key] + "") && model.visible

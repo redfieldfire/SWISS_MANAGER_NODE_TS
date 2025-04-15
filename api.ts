@@ -4,6 +4,7 @@ import { init } from './init'
 const app = express();
 const cors = require('cors');
 
+app.use('/uploads', express.static('uploads'));
 app.use(express.json());
 app.use(cors())
 
