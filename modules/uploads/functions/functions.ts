@@ -1,8 +1,9 @@
 import { T_DefaultControllerFunction, T_UpdateDataWithoutTrashed } from '../types/functions';
 
-import { BasicControllerFunctions } from '../../../globals';
+import { BasicControllerFunctions, freeObject } from '../../../globals';
 import { Main as Upload } from '../model';
 import { modelStructure } from '../DB/structures';
+import { T_Model } from '../types';
 
 export const updateDataWithoutTrashed: T_UpdateDataWithoutTrashed = async () => Upload.BM.helpers.updateDataWithoutTrashed()
 const basic_controller_functions = new BasicControllerFunctions({BM: Upload.BM})
@@ -29,8 +30,8 @@ export const uploadImageToModel: T_DefaultControllerFunction = async (req, mr) =
             name: req.file.filename
         })
     
-        mr.data = outcome.data
-        return true
+        const new_upload = new Upload((outcome.data[0] as freeObject).model  as T_Model)
+        return Upload.BM.helpers.manageResponseData(mr, true, [new_upload.BDM.resource()])
 
     }, mr, 'Error Uploading an Image')
 }
