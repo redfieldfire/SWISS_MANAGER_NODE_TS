@@ -1,6 +1,9 @@
 export const modelStructure: {[index: string]: any} = {
     id: 0,
-    head: {},
+    created_at: "",
+    name: "",
+    type: "",
+    image_name: "",
     players: [],
     rounds: [],
     winner: "",
@@ -11,6 +14,9 @@ export const modelStructure: {[index: string]: any} = {
 export const indexModelStructure: {[index: string]: any} = {
     id: 0,
     file_name: "",
-    tournament_name: "",
+    name: "",
+    created_at: "",
+    image_name: "",
+    type: "",
     visible: true
 }

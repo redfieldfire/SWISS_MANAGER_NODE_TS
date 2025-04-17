@@ -19,7 +19,10 @@ const basic_controller_functions = new BasicControllerFunctions(
         BM: Tournament.BM,
         addModelExtraFunction: async (index: T_IndexModel, row: T_Model, mr: ManageResponse) => {
 
-            index.name = row.head.name
+            index.name = row.name
+            index.created_at = row.created_at
+            index.image_name = row.image_name
+            index.type = row.type
 
             if (row.players.length) {
 

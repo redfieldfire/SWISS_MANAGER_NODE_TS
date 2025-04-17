@@ -1,7 +1,12 @@
 [
   {
     "id": 0,
-    "name": "default.png",
+    "name": "default_user.png",
+    "visible": true
+  },
+  {
+    "id": 1,
+    "name": "default_tournament.png",
     "visible": true
   }
 ]
